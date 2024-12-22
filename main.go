@@ -133,15 +133,6 @@ func waitForTerminationRequest() {
 
 	<-quit
 	log.Info().Msg("Shutting down server...")
-
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
-
-	// if err := server.Shutdown(ctx); err != nil {
-	// 	log.Error().Err(err).Msg("Error during server shutdown")
-	// } else {
-	// 	log.Info().Msg("Server shut down gracefully")
-	// }
 }
 
 // initLogger initializes the logger with zerolog, diode, and a rotating logger.
