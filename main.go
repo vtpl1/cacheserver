@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -46,12 +47,47 @@ func getConfigFilePath() string {
 	return suggestedConfigFile
 }
 
+var GitCommit string
+
+func getVersion() string {
+	if GitCommit != "" {
+		return GitCommit
+	}
+	GitCommit = "unknown"
+	buildDate := ""
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return GitCommit
+	}
+	modified := false
+
+	for _, setting := range info.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			GitCommit = setting.Value
+		case "vcs.time":
+			buildDate = setting.Value
+		case "vcs.modified":
+			modified = true
+		}
+	}
+	if modified {
+		GitCommit += "+CHANGES"
+	}
+	if buildDate != "" {
+		GitCommit += " " + buildDate
+	}
+	return GitCommit
+}
+
 func main() {
 	// Create the CLI application
 
 	cmd := &cli.Command{
 		EnableShellCompletion: true,
-		Name:                  "cache-server-cli",
+		Name:                  "cache-server",
+		Version:               getVersion(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "host",
@@ -163,5 +199,5 @@ func initLogger(logFile string, logLevel string) {
 	zerolog.SetGlobalLevel(level)
 
 	// Log application startup
-	log.Info().Msg("Logger initialized with file rotation and diode buffering")
+	log.Info().Msgf("App started %s %s", getApplicationName(), getVersion())
 }
