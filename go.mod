@@ -1,4 +1,4 @@
-module cacheserver
+module github.com/vtpl1/cacheserver
 
 go 1.23.3
 
