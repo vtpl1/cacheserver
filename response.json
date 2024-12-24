@@ -1,0 +1,26 @@
+{
+    "returnValue": "SUCCESS",
+    "code": 0,
+    "status": 200,
+    "description": "OK",
+    "message": "Successfully Retrieved!",
+    "result": [
+        {
+            "recording": [
+                {
+                    "siteId": 5,
+                    "channelId": 5,
+                    "timeStamp": 1735050709524,
+                    "timeStampEnd": 1735051309524,
+                    "peopleCount": 0,
+                    "limit": 0,
+                    "offset": 0,
+                    "vehicleCount": 0
+                }
+            ],
+            "event": [],
+            "human": [],
+            "vehicle": []
+        }
+    ]
+}
