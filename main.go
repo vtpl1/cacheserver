@@ -12,11 +12,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gofiber/contrib/fiberzerolog"
+	"github.com/gofiber/fiber/v2"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/diode"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v3"
+	"github.com/vtpl1/cacheserver/api"
+	"github.com/vtpl1/cacheserver/db"
 )
 
 func getFolder(s string) string {
@@ -101,6 +105,12 @@ func main() {
 				Sources: cli.EnvVars("PORT"),
 			},
 			&cli.StringFlag{
+				Name:    "mongo-connection-string",
+				Value:   "mongodb://root:root%40central1234@172.236.106.28:27017/",
+				Usage:   "The connection string for the MongoDB server",
+				Sources: cli.EnvVars("MONGO_CONNECTION_STRING"),
+			},
+			&cli.StringFlag{
 				Name:  "logfile",
 				Value: fmt.Sprintf("%s.log", filepath.Join(getLogFolder(), getApplicationName())),
 				Usage: "The log file path for the rotating logger",
@@ -111,43 +121,7 @@ func main() {
 				Usage: "The log level",
 			},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			// Initialize logging
-			initLogger(cmd.String("logfile"), cmd.String("logLevel"))
-			host := cmd.String("host")
-			port := cmd.Int("port")
-			address := fmt.Sprintf("%s:%d", host, port)
-
-			// Start the HTTP server
-			log.Info().Msgf("Starting server at %s", address)
-			// Configure the HTTP server with timeouts
-			server := &http.Server{
-				Addr:         address,
-				Handler:      http.HandlerFunc(handleRequest),
-				ReadTimeout:  10 * time.Second,  // Timeout for reading request
-				WriteTimeout: 10 * time.Second,  // Timeout for writing response
-				IdleTimeout:  120 * time.Second, // Timeout for idle connections
-			}
-
-			// Start the server in a goroutine
-			go func() {
-				log.Info().Msgf("Starting server at %s", address)
-				if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					log.Fatal().Err(err).Msg("Server failed to start")
-				}
-			}()
-			waitForTerminationRequest()
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-			defer cancel()
-
-			if err := server.Shutdown(ctx); err != nil {
-				log.Error().Err(err).Msg("Error during server shutdown")
-			} else {
-				log.Info().Msg("Server shut down gracefully")
-			}
-
-			return nil
-		},
+		Action: startServer,
 	}
 
 	// Run the CLI application
@@ -155,6 +129,64 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
+	fmt.Println("Server shut down gracefully 2")
+}
+
+func startServer(ctx context.Context, cmd *cli.Command) error {
+	// Initialize logging
+	err, bufferWriter := initLogger(cmd.String("logfile"), cmd.String("logLevel"))
+	if err != nil {
+		return err
+	}
+	defer bufferWriter.Close()
+	host := cmd.String("host")
+	port := cmd.Int("port")
+	address := fmt.Sprintf("%s:%d", host, port)
+
+	// Start the HTTP server
+	log.Info().Msgf("Starting server at %s", address)
+	mongoConnectionString := cmd.String("mongo-connection-string")
+	mongoClient, err := db.GetMongoClient(mongoConnectionString)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to connect to MongoDB")
+	}
+	defer mongoClient.Disconnect(ctx)
+
+	// Configure the HTTP app with timeouts
+	app := fiber.New(fiber.Config{
+		// Prefork:       true,
+		// CaseSensitive: true,
+		// StrictRouting: true,
+		ServerHeader: "Videonetics",
+		AppName:      fmt.Sprintf("Cache Server %v", getVersion()),
+	})
+
+	app.Use(fiberzerolog.New(fiberzerolog.Config{
+		Logger: &log.Logger,
+	}))
+	// app.Use(func(c *fiber.Ctx) error {
+	// 	c.Locals("mongo-connection-string", mongoConnectionString)
+	// 	return c.Next()
+	// })
+	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline", api.TimeLineHandler)
+
+	// Start the server in a goroutine
+	go func() {
+		log.Info().Msgf("Starting server at %s", address)
+		if err := app.Listen(fmt.Sprintf("%s:%d", host, port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Err(err).Msg("Server failed to start")
+		}
+	}()
+	waitForTerminationRequest()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	log.Info().Msg("Starting shutdown")
+	if err := app.ShutdownWithContext(ctx); err != nil {
+		log.Error().Err(err).Msg("Error during server shutdown")
+	}
+	log.Info().Msg("Server shut down gracefully")
+	fmt.Println("Server shut down gracefully")
+	return nil
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
@@ -172,7 +204,7 @@ func waitForTerminationRequest() {
 }
 
 // initLogger initializes the logger with zerolog, diode, and a rotating logger.
-func initLogger(logFile string, logLevel string) {
+func initLogger(logFile string, logLevel string) (error, diode.Writer) {
 	// Configure Lumberjack for log rotation
 	rotatingLogger := &lumberjack.Logger{
 		Filename:   logFile,
@@ -194,10 +226,11 @@ func initLogger(logFile string, logLevel string) {
 	level, err := zerolog.ParseLevel(logLevel)
 	if err != nil {
 		fmt.Printf("Invalid log level: %s\n", logLevel)
-		os.Exit(1)
+		return err, bufferedWriter
 	}
 	zerolog.SetGlobalLevel(level)
 
 	// Log application startup
 	log.Info().Msgf("App started %s %s", getApplicationName(), getVersion())
+	return nil, bufferedWriter
 }
