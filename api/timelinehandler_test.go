@@ -34,16 +34,53 @@ func TestTimeLineHandler(t *testing.T) {
 	req := httptest.NewRequest("GET", "/site/5/channel/5/1733931560425/1733932680391/timeline", nil)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := app.Test(req)
-	assert.NoError(t, err)
+	resp, err := app.Test(req, 3000)
+	if err != nil {
+		t.Fatalf("Error during request: %v", err)
+	}
+	defer resp.Body.Close()
+
 	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 
-	jsonBytes, err := json.Marshal(resp.Body)
-	assert.NoError(t, err)
-	var out api.TimeLineResponse
-	err = json.Unmarshal(jsonBytes, &out)
-	assert.NoError(t, err)
-	timeLineResponse := api.NewTimeLineResponse()
-	assert.Equal(t, timeLineResponse, out)
+	decoder := json.NewDecoder(resp.Body)
+	var timeLineResponse2 api.TimeLineResponse
+	if err := decoder.Decode(&timeLineResponse2); err != nil {
+		t.Fatalf("Error decoding JSON response: %v", err)
+	}
+	timeLineResponse1 := api.TimeLineResponse{
+		ReturnValue: "SUCCESS",
+		Code:        0,
+		Status:      200,
+		Description: "OK",
+		Message:     "Successfully Retrieved!",
+		Results: []api.Result{
+			{
+				Recordings: []api.Recording{
+					{
+						SiteId:       5,
+						ChannelId:    5,
+						TimeStamp:    1733931560425,
+						TimeStampEnd: 1733932161301,
+					},
+					{
+						SiteId:       5,
+						ChannelId:    5,
+						TimeStamp:    1733932341866,
+						TimeStampEnd: 1733932641866,
+					},
+					{
+						SiteId:       5,
+						ChannelId:    5,
+						TimeStamp:    1733932680391,
+						TimeStampEnd: 1733932980391,
+					},
+				},
+				Events:   []api.Event{},
+				Humans:   []api.Human{},
+				Vehicles: []api.Vehicle{},
+			},
+		},
+	}
 
+	assert.Equal(t, timeLineResponse1, timeLineResponse2)
 }

@@ -31,10 +31,10 @@ type Vehicle struct {
 }
 
 type Result struct {
-	Recordings []Recording `json:"recordings"`
-	Events     []Event     `json:"events"`
-	Humans     []Human     `json:"humans"`
-	Vehicles   []Vehicle   `json:"vehicles"`
+	Recordings []Recording `json:"recording"`
+	Events     []Event     `json:"event"`
+	Humans     []Human     `json:"human"`
+	Vehicles   []Vehicle   `json:"vehicle"`
 }
 
 type TimeLineResponse struct {
@@ -43,7 +43,7 @@ type TimeLineResponse struct {
 	Status      int      `json:"status"`
 	Description string   `json:"description"`
 	Message     string   `json:"message"`
-	Results     []Result `json:"results"`
+	Results     []Result `json:"result"`
 }
 
 func NewTimeLineResponse() TimeLineResponse {
