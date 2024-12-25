@@ -34,7 +34,7 @@ func TestTimeLineHandler(t *testing.T) {
 	req := httptest.NewRequest("GET", "/site/5/channel/5/1733931560425/1733932680391/timeline", nil)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := app.Test(req, 3000)
+	resp, err := app.Test(req, 2000)
 	if err != nil {
 		t.Fatalf("Error during request: %v", err)
 	}
