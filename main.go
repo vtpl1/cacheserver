@@ -87,6 +87,10 @@ func getVersion() string {
 	return GitCommit
 }
 
+// ws://localhost:8080/ws/timeline/site/1/channel/1
+// ./cacheserver --mongo-connection-string mongodb://root:root%40central1234@45.33.125.226:27017/ --host 0.0.0.0
+// ./cacheserver --mongo-connection-string mongodb://root:root%40central1234@172.236.106.28:27017/ --host 0.0.0.0
+
 func main() {
 	// Create the CLI application
 
