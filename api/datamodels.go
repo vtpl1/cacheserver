@@ -19,7 +19,7 @@ type Human struct {
 	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
-	PeopleCount  int    `json:"peopleCount"`
+	// PeopleCount  int    `json:"peopleCount"`
 }
 
 type Vehicle struct {
@@ -27,7 +27,7 @@ type Vehicle struct {
 	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
-	VehicleCount int    `json:"vehicleCount"`
+	// VehicleCount int    `json:"vehicleCount"`
 }
 
 type Result struct {
@@ -57,4 +57,13 @@ func NewTimeLineResponse() TimeLineResponse {
 			{Recordings: []Recording{}, Events: []Event{}, Humans: []Human{}, Vehicles: []Vehicle{}},
 		},
 	}
+}
+
+type Command struct {
+	CommandId  string `json:"commandId"`
+	PivotPoint int    `json:"pivotPoint"`
+	DisplayMin int    `json:"displayMin"`
+	DisplayMax int    `json:"displayMax"`
+	DomainMin  int    `json:"domainMin"`
+	DomainMax  int    `json:"domainMax"`
 }

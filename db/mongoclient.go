@@ -38,8 +38,8 @@ func GetMongoClient(connectionString string) (*mongo.Client, error) {
 	loggerOptions := options.
 		Logger().
 		SetSink(sink).
-		SetMaxDocumentLength(100).
-		SetComponentLevel(options.LogComponentCommand, options.LogLevelDebug)
+		SetMaxDocumentLength(25).
+		SetComponentLevel(options.LogComponentCommand, options.LogLevelInfo)
 	// MongoDB connection URI
 	uri := connectionString // Replace with your MongoDB URI
 

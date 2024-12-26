@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/gofiber/contrib/fiberzerolog"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/diode"
@@ -95,7 +97,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "host",
-				Value: "127.0.0.1",
+				Value: "0.0.0.0",
 				Usage: "The host address for the server",
 			},
 			&cli.IntFlag{
@@ -106,7 +108,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:    "mongo-connection-string",
-				Value:   "mongodb://root:root%40central1234@172.236.106.28:27017/",
+				Value:   "mongodb://root:root%40central1234@45.33.125.226:27017/",
 				Usage:   "The connection string for the MongoDB server",
 				Sources: cli.EnvVars("MONGO_CONNECTION_STRING"),
 			},
@@ -164,11 +166,23 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	app.Use(fiberzerolog.New(fiberzerolog.Config{
 		Logger: &log.Logger,
 	}))
-	// app.Use(func(c *fiber.Ctx) error {
-	// 	c.Locals("mongo-connection-string", mongoConnectionString)
-	// 	return c.Next()
-	// })
-	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline", api.TimeLineHandler)
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*", // Allow all origins
+	}))
+
+	app.Use("/ws", func(c *fiber.Ctx) error {
+		// IsWebSocketUpgrade returns true if the client
+		// requested upgrade to the WebSocket protocol.
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+
+	app.Use("/ws/timeline/site/:siteId/channel/:channelId", websocket.New(api.TimeLineWSHandler))
+	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline/all", api.TimeLineHandler)
 
 	// Start the server in a goroutine
 	go func() {

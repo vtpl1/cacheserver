@@ -29,9 +29,9 @@ func TestTimeLineHandler(t *testing.T) {
 		Logger: &log.Logger,
 	}))
 
-	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline", api.TimeLineHandler)
+	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline/all", api.TimeLineHandler)
 
-	req := httptest.NewRequest("GET", "/site/5/channel/5/1733931560425/1733932680391/timeline", nil)
+	req := httptest.NewRequest("GET", "/site/5/channel/5/1733931560425/1733932680391/timeline/all", nil)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := app.Test(req, 2000)
