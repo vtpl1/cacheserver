@@ -59,7 +59,8 @@ func TimeLineHandler(c *fiber.Ctx) error {
 		{"$and": []bson.M{
 			{"startTimestamp": bson.M{"$lte": timeStamp}},
 			{"endTimestamp": bson.M{"$gte": timeStampEnd}},
-		}}}}
+		}},
+	}}
 
 	// Fetch recordings in parallel
 	go func() {

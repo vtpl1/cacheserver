@@ -3,7 +3,5 @@ package db
 
 import "errors"
 
-var (
-	// ErrNoDefaultMongoClient is returned when no MongoDB client is registered with a connection string
-	ErrNoDefaultMongoClient = errors.New("no mongodb client is registered with a connection string")
-)
+// ErrNoDefaultMongoClient is returned when no MongoDB client is registered with a connection string
+var ErrNoDefaultMongoClient = errors.New("no mongodb client is registered with a connection string")

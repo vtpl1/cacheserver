@@ -182,12 +182,25 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 		// requested upgrade to the WebSocket protocol.
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
+			// // Create a context from the Fiber request
+			// ctx := context.WithValue(c.Context(), "requestID", c.Get("X-Request-ID"))
+
+			// // Store the context in Fiber locals
+			// c.Locals("ctx", ctx)
 			return c.Next()
 		}
 		return fiber.ErrUpgradeRequired
 	})
 
-	app.Use("/ws/timeline/site/:siteId/channel/:channelId", websocket.New(api.TimeLineWSHandler))
+	app.Use("/ws/timeline/site/:siteId/channel/:channelId", websocket.New(func(c *websocket.Conn) {
+		// ctx1, ok := c.Locals("ctx").(context.Context) // Pass context from Fiber request
+		// if !ok {
+		// 	log.Error().Msg("Context does not exists")
+		// 	return
+		// }
+		api.TimeLineWSHandler(context.TODO(), c)
+	}))
+
 	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline/all", api.TimeLineHandler)
 
 	// Start the server in a goroutine

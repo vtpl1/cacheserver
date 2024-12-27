@@ -11,10 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-var errInvalidSiteID = errors.New("invalid siteId")
-var errInvalidChannelID = errors.New("invalid channelId")
-var errInvalidTimeStamp = errors.New("invalid timeStamp")
-var errInvalidTimeStampEnd = errors.New("invalid timeStampEnd")
+var (
+	errInvalidSiteID       = errors.New("invalid siteId")
+	errInvalidChannelID    = errors.New("invalid channelId")
+	errInvalidTimeStamp    = errors.New("invalid timeStamp")
+	errInvalidTimeStampEnd = errors.New("invalid timeStampEnd")
+)
 
 func parseParamsSiteIDChannelIDFromWS(c *websocket.Conn) (int, int, error) {
 	siteID, err := strconv.Atoi(c.Params("siteId"))
