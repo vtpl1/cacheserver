@@ -1,9 +1,9 @@
+// Package db exports error types for db package.
 package db
-
-// Description: Define error types for db package.
 
 import "errors"
 
 var (
+	// ErrNoDefaultMongoClient is returned when no MongoDB client is registered with a connection string
 	ErrNoDefaultMongoClient = errors.New("no mongodb client is registered with a connection string")
 )

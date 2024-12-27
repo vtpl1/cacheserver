@@ -22,8 +22,8 @@ func TestTimeLineResponseAppend(t *testing.T) {
 			{
 				Recordings: []api.Recording{
 					{
-						SiteId:       5,
-						ChannelId:    5,
+						SiteID:       5,
+						ChannelID:    5,
 						TimeStamp:    1735050709524,
 						TimeStampEnd: 1735051309524,
 					},
@@ -38,8 +38,8 @@ func TestTimeLineResponseAppend(t *testing.T) {
 
 	recordings := []api.Recording{
 		{
-			SiteId:       5,
-			ChannelId:    5,
+			SiteID:       5,
+			ChannelID:    5,
 			TimeStamp:    1735050709524,
 			TimeStampEnd: 1735051309524,
 		},
@@ -56,11 +56,12 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 		t.Fatalf("Error: %v", err)
 	}
 	fileName := filepath.Join(dir, "..", "response.json")
+	fileName = filepath.Clean(fileName)
 	jsonFile, err := os.Open(fileName)
 	if err != nil {
 		t.Fatalf("Failed to open JSON file: %s", err)
 	}
-	defer jsonFile.Close()
+	defer jsonFile.Close() //nolint:errcheck
 
 	// Read the file contents
 	byteValue, err := io.ReadAll(jsonFile)
@@ -70,7 +71,7 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 
 	// Unmarshal the JSON data into the struct
 	var timeLineResponse api.TimeLineResponse
-	if err := json.Unmarshal(byteValue, &timeLineResponse); err != nil {
+	if err = json.Unmarshal(byteValue, &timeLineResponse); err != nil {
 		t.Fatalf("Failed to unmarshal JSON data: %s", err)
 	}
 
@@ -89,8 +90,8 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 			{
 				Recordings: []api.Recording{
 					{
-						SiteId:       5,
-						ChannelId:    5,
+						SiteID:       5,
+						ChannelID:    5,
 						TimeStamp:    1735050709524,
 						TimeStampEnd: 1735051309524,
 					},

@@ -17,12 +17,12 @@ type mongoClientInstanceOrError struct {
 }
 
 var (
-	clientInstances     = make(map[string]*mongoClientInstanceOrError) // Map of clients per connection string
-	clientInstancesLock sync.Mutex                                     // Mutex to handle concurrent access
+	clientInstances     = make(map[string]*mongoClientInstanceOrError) //nolint:gochecknoglobals // Map of clients per connection string
+	clientInstancesLock sync.Mutex                                     //nolint:gochecknoglobals // Mutex to handle concurrent access
 )
 
 // GetMongoClient returns a singleton MongoDB client instance
-func GetMongoClient(connectionString string) (*mongo.Client, error) {
+func GetMongoClient(ctx context.Context, connectionString string) (*mongo.Client, error) {
 	clientInstancesLock.Lock()
 	defer clientInstancesLock.Unlock()
 	// Check if an instance already exists for this connection string
@@ -55,7 +55,7 @@ func GetMongoClient(connectionString string) (*mongo.Client, error) {
 	}
 
 	// Set a timeout for connecting to MongoDB
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	// Ping the MongoDB server to verify the connection
 	err = clientInstance.Ping(ctx, nil)
@@ -72,6 +72,7 @@ func GetMongoClient(connectionString string) (*mongo.Client, error) {
 	return mongoClientInstanceOrError.clientInstance, nil
 }
 
+// GetDefaultMongoClient returns the default MongoDB client instance
 func GetDefaultMongoClient() (*mongo.Client, error) {
 	clientInstancesLock.Lock()
 	defer clientInstancesLock.Unlock()

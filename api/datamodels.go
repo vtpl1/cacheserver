@@ -1,35 +1,41 @@
+// Package api contains the data models for the API
 package api
 
+// Recording represents a recording
 type Recording struct {
-	SiteId       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
-	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
+	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
+	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
 }
 
+// Event represents an event
 type Event struct {
-	SiteId       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
-	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
+	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
+	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
 }
 
+// Human represents a human
 type Human struct {
-	SiteId       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
-	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
+	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
+	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
 	// PeopleCount  int    `json:"peopleCount"`
 }
 
+// Vehicle represents a vehicle
 type Vehicle struct {
-	SiteId       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
-	ChannelId    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
+	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
+	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
 	TimeStampEnd uint64 `json:"timeStampEnd" bson:"endTimestamp"`
 	// VehicleCount int    `json:"vehicleCount"`
 }
 
+// Result represents the result of a query
 type Result struct {
 	Recordings []Recording `json:"recording"`
 	Events     []Event     `json:"event"`
@@ -37,6 +43,7 @@ type Result struct {
 	Vehicles   []Vehicle   `json:"vehicle"`
 }
 
+// TimeLineResponse represents the response of a timeline query
 type TimeLineResponse struct {
 	ReturnValue string   `json:"returnValue"`
 	Code        int      `json:"code"`
@@ -46,6 +53,7 @@ type TimeLineResponse struct {
 	Results     []Result `json:"result"`
 }
 
+// NewTimeLineResponse creates a new TimeLineResponse
 func NewTimeLineResponse() TimeLineResponse {
 	return TimeLineResponse{
 		ReturnValue: "SUCCESS",
@@ -59,8 +67,9 @@ func NewTimeLineResponse() TimeLineResponse {
 	}
 }
 
+// Command represents a command
 type Command struct {
-	CommandId  string `json:"commandId"`
+	CommandID  string `json:"commandId"`
 	PivotPoint int    `json:"pivotPoint"`
 	DisplayMin int    `json:"displayMin"`
 	DisplayMax int    `json:"displayMax"`

@@ -11,62 +11,67 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func parseParamsSiteIdChannelIdFromWS(c *websocket.Conn) (int, int, error) {
-	siteId, err := strconv.Atoi(c.Params("siteId"))
+var errInvalidSiteID = errors.New("invalid siteId")
+var errInvalidChannelID = errors.New("invalid channelId")
+var errInvalidTimeStamp = errors.New("invalid timeStamp")
+var errInvalidTimeStampEnd = errors.New("invalid timeStampEnd")
+
+func parseParamsSiteIDChannelIDFromWS(c *websocket.Conn) (int, int, error) {
+	siteID, err := strconv.Atoi(c.Params("siteId"))
 	if err != nil {
-		return 0, 0, errors.New("invalid siteId")
+		return 0, 0, errInvalidSiteID
 	}
 
-	channelId, err := strconv.Atoi(c.Params("channelId"))
+	channelID, err := strconv.Atoi(c.Params("channelId"))
 	if err != nil {
-		return 0, 0, errors.New("invalid channelId")
+		return 0, 0, errInvalidChannelID
 	}
 
-	return siteId, channelId, nil
+	return siteID, channelID, nil
 }
 
 // parseParams parses query parameters from the request context
-func parseParamsSiteIdChannelId(c *fiber.Ctx) (int, int, error) {
-	siteId, err := strconv.Atoi(c.Params("siteId"))
+func parseParamsSiteIDChannelID(c *fiber.Ctx) (int, int, error) {
+	siteID, err := strconv.Atoi(c.Params("siteId"))
 	if err != nil {
-		return 0, 0, errors.New("invalid siteId")
+		return 0, 0, errInvalidSiteID
 	}
 
-	channelId, err := strconv.Atoi(c.Params("channelId"))
+	channelID, err := strconv.Atoi(c.Params("channelId"))
 	if err != nil {
-		return 0, 0, errors.New("invalid channelId")
+		return 0, 0, errInvalidChannelID
 	}
 
-	return siteId, channelId, nil
+	return siteID, channelID, nil
 }
 
 // parseParams parses query parameters from the request context
 func parseParams(c *fiber.Ctx) (int, int, uint64, uint64, error) {
-	siteId, channelId, err := parseParamsSiteIdChannelId(c)
+	siteID, channelID, err := parseParamsSiteIDChannelID(c)
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("invalid siteId or channelId")
+		return 0, 0, 0, 0, err
 	}
 
 	timeStamp, err := strconv.ParseUint(c.Params("timeStamp"), 10, 64)
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("invalid timeStamp")
+		return 0, 0, 0, 0, errInvalidTimeStamp
 	}
 
 	timeStampEnd, err := strconv.ParseUint(c.Params("timeStampEnd"), 10, 64)
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("invalid timeStampEnd")
+		return 0, 0, 0, 0, errInvalidTimeStampEnd
 	}
 
-	return siteId, channelId, timeStamp, timeStampEnd, nil
+	return siteID, channelID, timeStamp, timeStampEnd, nil
 }
 
-func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteId, channelId int) ([]Recording, error) {
+func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Recording, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(ctx) //nolint:errcheck
 
 	var results []Recording
 	if err := cursor.All(ctx, &results); err != nil {
@@ -75,19 +80,19 @@ func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName str
 
 	// Update metadata for each result
 	for i := range results {
-		results[i].SiteId = siteId
-		results[i].ChannelId = channelId
+		results[i].SiteID = siteID
+		results[i].ChannelID = channelID
 	}
 	return results, nil
 }
 
-func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteId, channelId int) ([]Human, error) {
+func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Human, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(ctx) //nolint:errcheck
 
 	var results []Human
 	if err := cursor.All(ctx, &results); err != nil {
@@ -96,19 +101,19 @@ func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string,
 
 	// Update metadata for each result
 	for i := range results {
-		results[i].SiteId = siteId
-		results[i].ChannelId = channelId
+		results[i].SiteID = siteID
+		results[i].ChannelID = channelID
 	}
 	return results, nil
 }
 
-func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteId, channelId int) ([]Vehicle, error) {
+func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Vehicle, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(ctx) //nolint:errcheck
 
 	var results []Vehicle
 	if err := cursor.All(ctx, &results); err != nil {
@@ -117,19 +122,19 @@ func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName strin
 
 	// Update metadata for each result
 	for i := range results {
-		results[i].SiteId = siteId
-		results[i].ChannelId = channelId
+		results[i].SiteID = siteID
+		results[i].ChannelID = channelID
 	}
 	return results, nil
 }
 
-func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteId, channelId int) ([]Event, error) {
+func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Event, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(ctx) //nolint:errcheck
 
 	var results []Event
 	if err := cursor.All(ctx, &results); err != nil {
@@ -138,8 +143,8 @@ func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string,
 
 	// Update metadata for each result
 	for i := range results {
-		results[i].SiteId = siteId
-		results[i].ChannelId = channelId
+		results[i].SiteID = siteID
+		results[i].ChannelID = channelID
 	}
 	return results, nil
 }

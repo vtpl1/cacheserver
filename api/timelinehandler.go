@@ -16,14 +16,14 @@ import (
 
 // TimeLineHandler handles timeline requests
 func TimeLineHandler(c *fiber.Ctx) error {
-	siteId, channelId, timeStamp, timeStampEnd, err := parseParams(c)
+	siteID, channelID, timeStamp, timeStampEnd, err := parseParams(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	logger := log.With().
-		Int("siteId", siteId).
-		Int("channelId", channelId).
+		Int("siteId", siteID).
+		Int("channelId", channelID).
 		Uint64("timeStamp", timeStamp).
 		Uint64("timeStampEnd", timeStampEnd).
 		Str("span", time.UnixMilli(int64(timeStampEnd)).Sub(time.UnixMilli(int64(timeStamp))).String()).
@@ -64,29 +64,29 @@ func TimeLineHandler(c *fiber.Ctx) error {
 	// Fetch recordings in parallel
 	go func() {
 		defer wg.Done()
-		recordings, recordingsQueryErr = fetchRecordings(ctx, client.Database("ivms_30"), fmt.Sprintf("vVideoClips_%d_%d", siteId, channelId), filterTimeStamp, siteId, channelId)
+		recordings, recordingsQueryErr = fetchRecordings(ctx, client.Database("ivms_30"), fmt.Sprintf("vVideoClips_%d_%d", siteID, channelID), filterTimeStamp, siteID, channelID)
 	}()
 
 	// Fetch humans in parallel
 	go func() {
 		defer wg.Done()
-		humans, humansQueryErr = fetchHumans(ctx, client.Database("pvaDB"), fmt.Sprintf("pva_HUMAN_%d_%d", siteId, channelId), filterTimeStamp, siteId, channelId)
+		humans, humansQueryErr = fetchHumans(ctx, client.Database("pvaDB"), fmt.Sprintf("pva_HUMAN_%d_%d", siteID, channelID), filterTimeStamp, siteID, channelID)
 	}()
 
 	// Fetch vehicles in parallel
 	go func() {
 		defer wg.Done()
-		vehicles, vehiclesQueryErr = fetchVehicles(ctx, client.Database("pvaDB"), fmt.Sprintf("pva_VEHICLE_%d_%d", siteId, channelId), filterTimeStamp, siteId, channelId)
+		vehicles, vehiclesQueryErr = fetchVehicles(ctx, client.Database("pvaDB"), fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), filterTimeStamp, siteID, channelID)
 	}()
 
 	// Fetch events in parallel
 	go func() {
 		defer wg.Done()
 		events, eventsQueryErr = fetchEvents(ctx, client.Database("dasEvents"), "dasEvents", bson.M{
-			"siteId":         siteId,
-			"channelId":      channelId,
+			"siteId":         siteID,
+			"channelId":      channelID,
 			"startTimestamp": bson.M{"$gte": timeStamp, "$lte": timeStampEnd},
-		}, siteId, channelId)
+		}, siteID, channelID)
 	}()
 
 	// Wait for all goroutines to complete
@@ -94,7 +94,7 @@ func TimeLineHandler(c *fiber.Ctx) error {
 
 	// If any query failed, return the error
 	if recordingsQueryErr != nil || humansQueryErr != nil || vehiclesQueryErr != nil || eventsQueryErr != nil {
-		err := errors.Join(recordingsQueryErr, humansQueryErr, vehiclesQueryErr, eventsQueryErr)
+		err = errors.Join(recordingsQueryErr, humansQueryErr, vehiclesQueryErr, eventsQueryErr)
 		logger.Error().Err(err).Msg("Error fetching data")
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching data")
 	}
@@ -126,8 +126,8 @@ func TimeLineHandler(c *fiber.Ctx) error {
 	// Marshal timeline response
 	data, err := json.MarshalIndent(timeline, "", "  ")
 	if err != nil {
-		logger.Error().Err(err).Msg("Error marshalling JSON")
-		return c.Status(fiber.StatusInternalServerError).SendString("Error marshalling JSON")
+		logger.Error().Err(err).Msg("Error marshaling JSON")
+		return c.Status(fiber.StatusInternalServerError).SendString("Error marshaling JSON")
 	}
 
 	return c.Send(data)

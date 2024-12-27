@@ -1,3 +1,4 @@
+// package main is the main entrypoint for the application.
 package main
 
 import (
@@ -26,7 +27,7 @@ import (
 )
 
 func getFolder(s string) string {
-	err := os.MkdirAll(s, os.ModePerm)
+	err := os.MkdirAll(s, os.ModeDir)
 	if err != nil {
 		fmt.Printf("Unable to create folder %s, %v", s, err)
 	}
@@ -37,7 +38,7 @@ func getApplicationName() string {
 	return "cache-server"
 }
 
-func getSessionFolder() string {
+func getSessionFolder() string { //nolint:unused
 	return getFolder(filepath.Join("session", getApplicationName()))
 }
 
@@ -45,7 +46,7 @@ func getLogFolder() string {
 	return getFolder(filepath.Join("logs", getApplicationName()))
 }
 
-func getConfigFilePath() string {
+func getConfigFilePath() string { //nolint:unused
 	suggestedConfigFile := filepath.ToSlash(fmt.Sprintf("%s/%s.yaml",
 		getSessionFolder(),
 		getApplicationName()))
@@ -53,25 +54,25 @@ func getConfigFilePath() string {
 	return suggestedConfigFile
 }
 
-var GitCommit string
+var gitCommit string //nolint:gochecknoglobals // Git commit hash set by the Go linker
 
 func getVersion() string {
-	if GitCommit != "" {
-		return GitCommit
+	if gitCommit != "" {
+		return gitCommit
 	}
-	GitCommit = "unknown"
+	gitCommit = "unknown"
 	buildDate := ""
 
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return GitCommit
+		return gitCommit
 	}
 	modified := false
 
 	for _, setting := range info.Settings {
 		switch setting.Key {
 		case "vcs.revision":
-			GitCommit = setting.Value
+			gitCommit = setting.Value
 		case "vcs.time":
 			buildDate = setting.Value
 		case "vcs.modified":
@@ -79,12 +80,12 @@ func getVersion() string {
 		}
 	}
 	if modified {
-		GitCommit += "+CHANGES"
+		gitCommit += "+CHANGES"
 	}
 	if buildDate != "" {
-		GitCommit += " " + buildDate
+		gitCommit += " " + buildDate
 	}
-	return GitCommit
+	return gitCommit
 }
 
 // ws://localhost:8080/ws/timeline/site/1/channel/1
@@ -140,11 +141,11 @@ func main() {
 
 func startServer(ctx context.Context, cmd *cli.Command) error {
 	// Initialize logging
-	err, bufferWriter := initLogger(cmd.String("logfile"), cmd.String("logLevel"))
+	bufferWriter, err := initLogger(cmd.String("logfile"), cmd.String("logLevel"))
 	if err != nil {
 		return err
 	}
-	defer bufferWriter.Close()
+	defer bufferWriter.Close() //nolint:errcheck
 	host := cmd.String("host")
 	port := cmd.Int("port")
 	address := fmt.Sprintf("%s:%d", host, port)
@@ -152,11 +153,12 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	// Start the HTTP server
 	log.Info().Msgf("Starting server at %s", address)
 	mongoConnectionString := cmd.String("mongo-connection-string")
-	mongoClient, err := db.GetMongoClient(mongoConnectionString)
+	mongoClient, err := db.GetMongoClient(ctx, mongoConnectionString)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to connect to MongoDB")
+		return err
 	}
-	defer mongoClient.Disconnect(ctx)
+	defer mongoClient.Disconnect(ctx) //nolint:errcheck
 
 	// Configure the HTTP app with timeouts
 	app := fiber.New(fiber.Config{
@@ -207,11 +209,6 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func handleRequest(w http.ResponseWriter, r *http.Request) {
-	log.Info().Msgf("Received request: %s %s", r.Method, r.URL.Path)
-	fmt.Fprintln(w, "Hello, world!")
-}
-
 // gracefulShutdown handles termination signals to gracefully shut down the server.
 func waitForTerminationRequest() {
 	quit := make(chan os.Signal, 1)
@@ -222,7 +219,7 @@ func waitForTerminationRequest() {
 }
 
 // initLogger initializes the logger with zerolog, diode, and a rotating logger.
-func initLogger(logFile string, logLevel string) (error, diode.Writer) {
+func initLogger(logFile string, logLevel string) (diode.Writer, error) {
 	// Configure Lumberjack for log rotation
 	rotatingLogger := &lumberjack.Logger{
 		Filename:   logFile,
@@ -244,11 +241,11 @@ func initLogger(logFile string, logLevel string) (error, diode.Writer) {
 	level, err := zerolog.ParseLevel(logLevel)
 	if err != nil {
 		fmt.Printf("Invalid log level: %s\n", logLevel)
-		return err, bufferedWriter
+		return bufferedWriter, err
 	}
 	zerolog.SetGlobalLevel(level)
 
 	// Log application startup
 	log.Info().Msgf("App started %s %s", getApplicationName(), getVersion())
-	return nil, bufferedWriter
+	return bufferedWriter, nil
 }

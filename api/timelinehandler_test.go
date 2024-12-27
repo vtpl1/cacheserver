@@ -19,12 +19,12 @@ func TestTimeLineHandler(t *testing.T) {
 	ctx := context.Background()
 	mongoConnectionString := "mongodb://root:root%40central1234@172.236.106.28:27017/"
 	// mongoConnectionString := "mongo"
-	mongoClient, err := db.GetMongoClient(mongoConnectionString)
+	mongoClient, err := db.GetMongoClient(ctx, mongoConnectionString)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to connect to MongoDB")
 		t.Fatal(err)
 	}
-	defer mongoClient.Disconnect(ctx)
+	defer mongoClient.Disconnect(ctx) //nolint:errcheck
 	app.Use(fiberzerolog.New(fiberzerolog.Config{
 		Logger: &log.Logger,
 	}))
@@ -38,7 +38,7 @@ func TestTimeLineHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error during request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 
@@ -57,20 +57,20 @@ func TestTimeLineHandler(t *testing.T) {
 			{
 				Recordings: []api.Recording{
 					{
-						SiteId:       5,
-						ChannelId:    5,
+						SiteID:       5,
+						ChannelID:    5,
 						TimeStamp:    1733931560425,
 						TimeStampEnd: 1733932161301,
 					},
 					{
-						SiteId:       5,
-						ChannelId:    5,
+						SiteID:       5,
+						ChannelID:    5,
 						TimeStamp:    1733932341866,
 						TimeStampEnd: 1733932641866,
 					},
 					{
-						SiteId:       5,
-						ChannelId:    5,
+						SiteID:       5,
+						ChannelID:    5,
 						TimeStamp:    1733932680391,
 						TimeStampEnd: 1733932980391,
 					},

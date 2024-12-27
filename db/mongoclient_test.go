@@ -21,12 +21,14 @@ func TestGetMongoClient(t *testing.T) {
 	// Test 1: Ensure GetMongoClient returns a non-nil client
 	connectionString := "mongodb://root:root%40central1234@172.236.106.28:27017/"
 
-	client1, err := db.GetMongoClient(connectionString)
+	ctx := context.Background()
+
+	client1, err := db.GetMongoClient(ctx, connectionString)
 	assert.NotNil(t, client1, "MongoDB client should not be nil")
 	assert.NoError(t, err, "GetMongoClient should not return an error")
 
 	// Test 2: Ensure GetMongoClient returns the same instance (singleton)
-	client2, err := db.GetMongoClient(connectionString)
+	client2, err := db.GetMongoClient(ctx, connectionString)
 	assert.Equal(t, client1, client2, "GetMongoClient should return the same instance (singleton)")
 	assert.NoError(t, err, "GetMongoClient should not return an error")
 
@@ -35,7 +37,7 @@ func TestGetMongoClient(t *testing.T) {
 	assert.NoError(t, err, "GetDefaultMongoClient should not return an error")
 
 	// Test 3: Verify the client is connected by pinging the server
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	err = client1.Ping(ctx, nil)
@@ -46,7 +48,8 @@ func TestGetMongoClient(t *testing.T) {
 }
 
 func TestInvalidGetMongoClient(t *testing.T) {
-	client, shouldReturnError := db.GetMongoClient("connectionString")
+	ctx := context.TODO()
+	client, shouldReturnError := db.GetMongoClient(ctx, "connectionString")
 	if shouldReturnError == nil {
 		t.Error("GetMongoClient should return an error if the connection string is invalid")
 	}
@@ -54,10 +57,10 @@ func TestInvalidGetMongoClient(t *testing.T) {
 }
 
 func TestIfPingFailsGetMongoClient(t *testing.T) {
-	client, shouldReturnError := db.GetMongoClient("mongodb://root:root%40central1234@localhost:27017/")
+	ctx := context.TODO()
+	client, shouldReturnError := db.GetMongoClient(ctx, "mongodb://root:root%40central1234@localhost:27017/")
 	if shouldReturnError == nil {
 		t.Error("GetMongoClient should return an error if mongo server is not reachable")
-
 	}
 	assert.Nil(t, client, "MongoDB client should be nil if an error occurs")
 }
