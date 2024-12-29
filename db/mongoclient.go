@@ -17,8 +17,9 @@ type mongoClientInstanceOrError struct {
 }
 
 var (
-	clientInstances     = make(map[string]*mongoClientInstanceOrError) //nolint:gochecknoglobals // Map of clients per connection string
-	clientInstancesLock sync.Mutex                                     //nolint:gochecknoglobals // Mutex to handle concurrent access
+	clientInstances       = make(map[string]*mongoClientInstanceOrError) //nolint:gochecknoglobals // Map of clients per connection string
+	clientInstancesLock   sync.Mutex                                     //nolint:gochecknoglobals // Mutex to handle concurrent access
+	GetDefaultMongoClient func() (*mongo.Client, error)                  = getDefaultMongoClient
 )
 
 // GetMongoClient returns a singleton MongoDB client instance
@@ -73,7 +74,7 @@ func GetMongoClient(ctx context.Context, connectionString string) (*mongo.Client
 }
 
 // GetDefaultMongoClient returns the default MongoDB client instance
-func GetDefaultMongoClient() (*mongo.Client, error) {
+func getDefaultMongoClient() (*mongo.Client, error) {
 	clientInstancesLock.Lock()
 	defer clientInstancesLock.Unlock()
 	for _, client := range clientInstances {
