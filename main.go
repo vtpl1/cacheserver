@@ -150,8 +150,6 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	port := cmd.Int("port")
 	address := fmt.Sprintf("%s:%d", host, port)
 
-	// Start the HTTP server
-	log.Info().Msgf("Starting server at %s", address)
 	mongoConnectionString := cmd.String("mongo-connection-string")
 	mongoClient, err := db.GetMongoClient(ctx, mongoConnectionString)
 	if err != nil {
@@ -189,12 +187,12 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	})
 
 	app.Use("/ws/timeline/site/:siteId/channel/:channelId", websocket.New(func(c *websocket.Conn) {
-		ctx, ok := c.Locals("ctx").(context.Context) // Pass context from Fiber request
+		ctx1, ok := c.Locals("ctx").(context.Context) // Pass context from Fiber request
 		if !ok {
 			log.Error().Msg("Context does not exists")
 			return
 		}
-		api.TimeLineWSHandler(ctx, c)
+		api.TimeLineWSHandler(ctx1, c)
 	}))
 
 	app.Get("site/:siteId/channel/:channelId/:timeStamp/:timeStampEnd/timeline/all", api.TimeLineHandler)
@@ -202,7 +200,7 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	// Start the server in a goroutine
 	go func() {
 		log.Info().Msgf("Starting server at %s", address)
-		if err := app.Listen(fmt.Sprintf("%s:%d", host, port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := app.Listen(address); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Err(err).Msg("Server failed to start")
 		}
 	}()

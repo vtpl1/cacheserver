@@ -1,5 +1,10 @@
 all: build
 
+install:
+	@go install golang.org/x/vuln/cmd/govulncheck@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@go install mvdan.cc/gofumpt@latest
+
 lintall: lintverify lint
 
 lint: clear lint1
@@ -10,21 +15,24 @@ build:
 	@go clean
 	@go build -buildvcs=true -ldflags "-s -w"
 
+fumpt:
+	@gofumpt -l -w .
+
 # Run the application
 run:
 	@go run cmd/main.go
 
 # Run the application
 lintverify:
-	@/home/vscode/go/bin/golangci-lint config verify
+	@golangci-lint config verify
 
 # Run the application
 lint1:
-	@/home/vscode/go/bin/golangci-lint run ./...
+	@golangci-lint run ./...
 
 # Run the application
 vul:
-	@/home/vscode/go/bin/govulncheck -show verbose ./...
+	@govulncheck -show verbose ./...
 
 clear:
 	@clear && printf '\e[3J'

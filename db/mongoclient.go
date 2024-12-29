@@ -17,9 +17,10 @@ type mongoClientInstanceOrError struct {
 }
 
 var (
-	clientInstances       = make(map[string]*mongoClientInstanceOrError) //nolint:gochecknoglobals // Map of clients per connection string
-	clientInstancesLock   sync.Mutex                                     //nolint:gochecknoglobals // Mutex to handle concurrent access
-	GetDefaultMongoClient func() (*mongo.Client, error)                  = getDefaultMongoClient
+	clientInstances     = make(map[string]*mongoClientInstanceOrError) //nolint:gochecknoglobals // Map of clients per connection string
+	clientInstancesLock sync.Mutex                                     //nolint:gochecknoglobals // Mutex to handle concurrent access
+	// GetDefaultMongoClient can be assigned from outside to mock test
+	GetDefaultMongoClient func() (*mongo.Client, error) = getDefaultMongoClient //nolint:gochecknoglobals
 )
 
 // GetMongoClient returns a singleton MongoDB client instance

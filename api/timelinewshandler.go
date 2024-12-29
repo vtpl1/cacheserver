@@ -14,8 +14,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-var errInvalidTimeRange = errors.New("invalid time range")
-var errInvalidCommand = errors.New("invalid command")
+var (
+	errInvalidTimeRange = errors.New("invalid time range")
+	errInvalidCommand   = errors.New("invalid command")
+)
 
 type collectionConfig struct {
 	name       string
@@ -88,31 +90,31 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 	var socketMutex sync.Mutex
 	var cancel context.CancelFunc
 	for {
-
 		var cmd Command
 		if err = c.ReadJSON(&cmd); err != nil {
 			logger.Error().Err(err).Msg("Failed to read websocket command")
 			writeErrorResponse(c, &socketMutex, errInvalidCommand)
+			if cancel != nil {
+				cancel()
+			}
 			break
-		}
-		if cmd.DomainMax < cmd.DomainMin {
-			writeErrorResponse(c, &socketMutex, errInvalidTimeRange)
-			continue
 		}
 		if cancel != nil {
 			cancel()
-			cancel = nil
 		}
-
-		ctx1, cancel1 := context.WithCancel(ctx)
-		cancel = cancel1
-		go writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger, err)
+		var ctx1 context.Context
+		ctx1, cancel = context.WithCancel(ctx)
+		go writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger)
 	}
 }
 
-func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger, err error) {
-	logger.Info().Msg("Write result start")
-	defer logger.Info().Msg("Write result end")
+func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger) {
+	if cmd.DomainMax < cmd.DomainMin {
+		logger.Error().Err(errInvalidTimeRange)
+		writeErrorResponse(c, socketMutex, errInvalidTimeRange)
+		return
+	}
+
 	filter := bson.M{"$or": []bson.M{
 		{"startTimestamp": bson.M{"$gte": cmd.DomainMin, "$lte": cmd.DomainMax}},
 		{"endTimestamp": bson.M{"$gte": cmd.DomainMin, "$lte": cmd.DomainMax}},
@@ -155,7 +157,7 @@ func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMut
 	wg.Wait()
 
 	socketMutex.Lock()
-	if err = c.WriteJSON(fiber.Map{"status": fiber.Map{
+	if err := c.WriteJSON(fiber.Map{"status": fiber.Map{
 		"status":    "done",
 		"command":   cmd,
 		"siteId":    siteID,
