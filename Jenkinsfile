@@ -32,8 +32,8 @@ pipeline {
                     go build
                     '''
                 }
-            }
-            archiveArtifacts artifacts: 'cacheserver.exe', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'cacheserver.exe', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
+            }            
         }
     }
 }
