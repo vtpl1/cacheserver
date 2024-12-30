@@ -29,8 +29,8 @@ linters-settings:
   gosec:
     excludes:
       - G115 # Potential integer overflow when converting between integer types
-    config:      
-      G306: "0o640"
+    # config:      
+    #   G306: "0o640"
 
 linters:
   enable:

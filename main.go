@@ -27,7 +27,7 @@ import (
 )
 
 func getFolder(s string) string {
-	err := os.MkdirAll(s, os.ModeDir)
+	err := os.MkdirAll(s, 0o750)
 	if err != nil {
 		fmt.Printf("Unable to create folder %s, %v", s, err)
 	}

@@ -14,5 +14,25 @@
         "displayMax": 0,
         "domainMin": 1735261912000,
         "domainMax": 1735305112000
+    },
+    {
+        "commandGet": {
+            "Id": "0",
+            "pivotPoint": 0,
+            "displayMin": 0,
+            "displayMax": 0,
+            "domainMin": 1735261912000,
+            "domainMax": 1735305112000
+        }
+    },
+    {
+        "commandStream": {
+            "Id": "0",
+            "pivotPoint": 0,
+            "displayMin": 0,
+            "displayMax": 0,
+            "domainMin": 1735261912000,
+            "domainMax": 1735305112000
+        }
     }
 ]
