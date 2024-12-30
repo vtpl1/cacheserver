@@ -57,7 +57,7 @@ func GetMongoClient(ctx context.Context, connectionString string) (*mongo.Client
 	}
 
 	// Set a timeout for connecting to MongoDB
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	// Ping the MongoDB server to verify the connection
 	err = clientInstance.Ping(ctx, nil)
