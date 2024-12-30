@@ -25,4 +25,4 @@ log*/
 # env file
 .env
 *.db
-cacheserver
+bin/
