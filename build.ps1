@@ -6,7 +6,7 @@ $Version = git describe --tags --always
 $Build = Get-Date -Format "yyyy-MM-ddTHH:mm"
 
 # Output directory
-$OutputDir = "bin"
+$OutputDir = "binwin"
 
 # Platforms to build for
 $Platforms = @(
@@ -34,8 +34,10 @@ foreach ($platform in $Platforms) {
     $os = $parts[0]
     $arch = $parts[1]
     $arm = if ($parts.Length -gt 2) { $parts[2] } else { $null }
-
-    $output = "$OutputDir/$AppName_$os_$arch"
+    
+    $output = "$OutputDir/$AppName"
+    $output += "_$os"
+    $output += "_$arch"
     if ($arm) {
         $output += "v$arm"
     }

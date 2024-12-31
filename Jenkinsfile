@@ -28,10 +28,10 @@ pipeline {
                 script {
                     bat '''
                     echo "Building Go project on Windows"
-                    go version
-                    call build.cmd
+                    go version                    
                     '''
                 }
+                sh 'pwsh build.ps1'
                 archiveArtifacts artifacts: 'binwin\\*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
             }            
         }
