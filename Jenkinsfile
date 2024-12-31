@@ -13,10 +13,10 @@ pipeline {
                     sh '''
                     echo "Building Go project on Linux"
                     go version
-                    go build
+                    make
                     '''
                 }
-                archiveArtifacts artifacts: 'cacheserver', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'bin/*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
             }
         }
 
@@ -29,10 +29,10 @@ pipeline {
                     bat '''
                     echo "Building Go project on Windows"
                     go version
-                    go build
+                    call build.cmd
                     '''
                 }
-                archiveArtifacts artifacts: 'cacheserver.exe', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'binwin\\*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
             }            
         }
     }

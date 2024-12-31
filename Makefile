@@ -20,7 +20,7 @@ PLATFORMS := \
 # Build flags
 LDFLAGS := -s -w -X main.GitCommit=$(VERSION) -X main.BuildTime=$(BUILD)
 
-.PHONY: all clean build
+.PHONY: all clean build install lint test race check
 
 # Default target: build for all platforms
 all: clean build
@@ -45,3 +45,28 @@ define build_platform
 	GOOS=$(OS) GOARCH=$(ARCH) $(if $(ARM),GOARM=$(ARM)) go build -ldflags "$(LDFLAGS)" -o $(OUTPUT)
 	@echo "Built: $(OUTPUT)"
 endef
+
+install:
+	@go install golang.org/x/vuln/cmd/govulncheck@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@go install mvdan.cc/gofumpt@latest
+	@go install golang.org/x/lint/golint@latest
+	@go install honnef.co/go/tools/cmd/staticcheck@latest
+	@go install github.com/client9/misspell/cmd/misspell@latest
+	@go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+lint:
+	@golangci-lint run ./...
+
+fmt:
+	@gofumpt -w -s -d .
+
+
+test: ## Run tests
+	@go test -short -v ./...
+
+race: ## Run tests with data race detector
+	@go test -race ./...
+
+# Run all checks
+check: lint fmt vet test race

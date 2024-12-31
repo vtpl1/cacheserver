@@ -8,7 +8,7 @@ for /f "tokens=*" %%i in ('git describe --tags --always') do set VERSION=%%i
 for /f "tokens=*" %%i in ('powershell -command "Get-Date -Format \"yyyy-MM-ddTHH:mm\""') do set BUILD=%%i
 
 REM Output directory
-set OUTPUT_DIR=bin
+set OUTPUT_DIR=binwin
 
 REM Platforms to build for
 set PLATFORMS=windows/amd64 linux/386 linux/amd64 linux/arm/7 linux/arm64 darwin/amd64
