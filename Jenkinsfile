@@ -31,7 +31,7 @@ pipeline {
                     go version                    
                     '''
                 }
-                powershell 'build.ps1'
+                powershell '.\\build.ps1'
                 archiveArtifacts artifacts: 'binwin\\*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
             }            
         }
