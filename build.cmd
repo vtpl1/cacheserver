@@ -35,8 +35,12 @@ for %%p in (%PLATFORMS%) do (
         echo Building for %OS%/%ARCH%/%ARM%...
         set GOOS=%OS%
         set GOARCH=%ARCH%
-        if defined ARM set GOARM=%ARM% & go build -ldflags "%LDFLAGS%" -o %OUTPUT%
-        if not defined ARM go build -ldflags "%LDFLAGS%" -o %OUTPUT%
+        if defined ARM (
+            set GOARM=%ARM%
+            go build -ldflags "%LDFLAGS%" -o %OUTPUT%
+        ) else (
+            go build -ldflags "%LDFLAGS%" -o %OUTPUT%
+        )
         echo Built: %OUTPUT%
     )
 )
