@@ -54,38 +54,39 @@ func getConfigFilePath() string { //nolint:unused
 	return suggestedConfigFile
 }
 
-var gitCommit string //nolint:gochecknoglobals // Git commit hash set by the Go linker
+// GitCommit hash set by the Go linker
+var GitCommit string //nolint:gochecknoglobals
+// BuildTime set by the Go linker
+var BuildTime string //nolint:gochecknoglobals
 
 func getVersion() string {
-	if gitCommit != "" {
-		return gitCommit
+	if GitCommit != "" && BuildTime != "" {
+		return GitCommit + " " + BuildTime
 	}
-	gitCommit = "unknown"
-	buildDate := ""
+	GitCommit = "unknown"
+	BuildTime = "unknown"
 
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return gitCommit
+		return GitCommit
 	}
 	modified := false
 
 	for _, setting := range info.Settings {
 		switch setting.Key {
 		case "vcs.revision":
-			gitCommit = setting.Value
+			GitCommit = setting.Value
 		case "vcs.time":
-			buildDate = setting.Value
+			BuildTime = setting.Value
 		case "vcs.modified":
 			modified = true
 		}
 	}
 	if modified {
-		gitCommit += "+CHANGES"
+		GitCommit += "+CHANGES"
 	}
-	if buildDate != "" {
-		gitCommit += " " + buildDate
-	}
-	return gitCommit
+
+	return GitCommit + " " + BuildTime
 }
 
 // ws://localhost:8080/ws/timeline/site/1/channel/1
@@ -164,7 +165,7 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 		// CaseSensitive: true,
 		// StrictRouting: true,
 		ServerHeader: "Videonetics",
-		AppName:      fmt.Sprintf("Cache Server %v", getVersion()),
+		AppName:      fmt.Sprintf("CacheServer %v", getVersion()),
 	})
 
 	app.Use(fiberzerolog.New(fiberzerolog.Config{
