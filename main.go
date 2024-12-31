@@ -55,9 +55,11 @@ func getConfigFilePath() string { //nolint:unused
 }
 
 // GitCommit hash set by the Go linker
-var GitCommit string //nolint:gochecknoglobals
-// BuildTime set by the Go linker
-var BuildTime string //nolint:gochecknoglobals
+var (
+	GitCommit string //nolint:gochecknoglobals
+	// BuildTime set by the Go linker
+	BuildTime string //nolint:gochecknoglobals
+)
 
 func getVersion() string {
 	if GitCommit != "" && BuildTime != "" {
@@ -179,11 +181,13 @@ func startServer(ctx context.Context, cmd *cli.Command) error {
 	app.Use("/ws", func(c *fiber.Ctx) error {
 		// IsWebSocketUpgrade returns true if the client
 		// requested upgrade to the WebSocket protocol.
+		log.Info().Msg("Server ws")
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
 			c.Locals("ctx", c.Context())
 			return c.Next()
 		}
+		log.Info().Msg("Server ErrUpgradeRequired")
 		return fiber.ErrUpgradeRequired
 	})
 

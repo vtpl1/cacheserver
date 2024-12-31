@@ -55,11 +55,14 @@ install:
 	@go install github.com/client9/misspell/cmd/misspell@latest
 	@go install github.com/securego/gosec/v2/cmd/gosec@latest
 
+lintverify:
+	@golangci-lint config verify
+
 lint:
 	@golangci-lint run ./...
 
 fmt:
-	@gofumpt -w -s -d .
+	@gofumpt -l -w .
 
 
 test: ## Run tests
@@ -68,5 +71,8 @@ test: ## Run tests
 race: ## Run tests with data race detector
 	@go test -race ./...
 
+clear:
+	@clear && printf '\e[3J'
+
 # Run all checks
-check: lint fmt vet test race
+check: lintverify lint fmt vet test race

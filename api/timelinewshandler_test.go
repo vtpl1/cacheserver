@@ -3,9 +3,11 @@ package api_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	fasthttp_websocket "github.com/fasthttp/websocket"
 	"github.com/gofiber/contrib/websocket"
@@ -13,9 +15,14 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtpl1/cacheserver/api"
+	"github.com/vtpl1/cacheserver/db"
 )
 
 func setupTimeLineWSHandlerApp() *fiber.App {
+	ctx := context.Background()
+	mongoConnectionString := "mongodb://root:root%40central1234@172.236.106.28:27017/"
+	// mongoConnectionString := "mongo"
+	db.GetMongoClient(ctx, mongoConnectionString)
 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
@@ -97,6 +104,31 @@ func TestTimeLineWSHandlerWithoutSiteIdChannelId(t *testing.T) {
 }
 
 func TestTimeLineWSHandler_Success(t *testing.T) {
+	app := setupTimeLineWSHandlerApp()
+	defer app.Shutdown()
+
+	conn, resp, err := fasthttp_websocket.DefaultDialer.Dial("ws://localhost:3000/ws/timeline/site/1/channel/1", nil)
+	defer resp.Body.Close()
+	defer conn.Close()
+	assert.NoError(t, err)
+
+	assert.Equal(t, 101, resp.StatusCode)
+	assert.Equal(t, "websocket", resp.Header.Get("Upgrade"))
+	err = conn.WriteJSON(api.Command{
+		CommandID:  "222",
+		PivotPoint: 0,
+		DisplayMin: 0,
+		DomainMin:  1732271925859,
+		DomainMax:  1735648104000,
+	})
+	assert.NoError(t, err)
+	var v interface{}
+
+	err = conn.ReadJSON(v)
+	assert.NoError(t, err)
+	fmt.Printf("here %v", v)
+	time.Sleep(5 * time.Second)
+
 }
 
 func TestTimeLineWSHandler_InvalidParams(t *testing.T) {

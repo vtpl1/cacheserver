@@ -8,6 +8,22 @@
         "domainMax": 1735186103000
     },
     {
+        "commandId": "small",
+        "pivotPoint": 0,
+        "displayMin": 0,
+        "displayMax": 0,
+        "domainMin": 1732271925859,
+        "domainMax": 1732271960058
+    },
+    {
+        "commandId": "big",
+        "pivotPoint": 0,
+        "displayMin": 0,
+        "displayMax": 0,
+        "domainMin": 1732271925859,
+        "domainMax": 1735652150000
+    },
+    {
         "commandId": "0",
         "pivotPoint": 0,
         "displayMin": 0,
