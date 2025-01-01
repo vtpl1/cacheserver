@@ -1,0 +1,864 @@
+[{
+  "_id": 1,
+  "startTimestamp": {
+    "$numberLong": "1732271925859"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732271927059"
+  },
+  "objectCount": {
+    "$numberLong": "35"
+  }
+},
+{
+  "_id": 2,
+  "startTimestamp": {
+    "$numberLong": "1732271941359"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732271960058"
+  },
+  "objectCount": {
+    "$numberLong": "509"
+  }
+},
+{
+  "_id": 3,
+  "startTimestamp": {
+    "$numberLong": "1732272006058"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732275044459"
+  },
+  "objectCount": {
+    "$numberLong": "146920"
+  }
+},
+{
+  "_id": 4,
+  "startTimestamp": {
+    "$numberLong": "1732275118862"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732275122862"
+  },
+  "objectCount": {
+    "$numberLong": "108"
+  }
+},
+{
+  "_id": 5,
+  "startTimestamp": {
+    "$numberLong": "1732275140562"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732275746462"
+  },
+  "objectCount": {
+    "$numberLong": "27243"
+  }
+},
+{
+  "_id": 6,
+  "startTimestamp": {
+    "$numberLong": "1732275828107"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732275832107"
+  },
+  "objectCount": {
+    "$numberLong": "77"
+  }
+},
+{
+  "_id": 7,
+  "startTimestamp": {
+    "$numberLong": "1732275849307"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732277638307"
+  },
+  "objectCount": {
+    "$numberLong": "79321"
+  }
+},
+{
+  "_id": 8,
+  "startTimestamp": {
+    "$numberLong": "1732278035308"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732278039307"
+  },
+  "objectCount": {
+    "$numberLong": "144"
+  }
+},
+{
+  "_id": 9,
+  "startTimestamp": {
+    "$numberLong": "1732278056407"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732634798607"
+  },
+  "objectCount": {
+    "$numberLong": "16879845"
+  }
+},
+{
+  "_id": 10,
+  "startTimestamp": {
+    "$numberLong": "1732634805007"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732695123109"
+  },
+  "objectCount": {
+    "$numberLong": "2883072"
+  }
+},
+{
+  "_id": 11,
+  "startTimestamp": {
+    "$numberLong": "1732696542859"
+  },
+  "endTimestamp": {
+    "$numberLong": "1732696546857"
+  },
+  "objectCount": {
+    "$numberLong": "104"
+  }
+},
+{
+  "_id": 12,
+  "startTimestamp": {
+    "$numberLong": "1732696564258"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733043188357"
+  },
+  "objectCount": {
+    "$numberLong": "16521384"
+  }
+},
+{
+  "_id": 13,
+  "startTimestamp": {
+    "$numberLong": "1733043197457"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733304873957"
+  },
+  "objectCount": {
+    "$numberLong": "11574651"
+  }
+},
+{
+  "_id": 14,
+  "startTimestamp": {
+    "$numberLong": "1733304910653"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733304914253"
+  },
+  "objectCount": {
+    "$numberLong": "159"
+  }
+},
+{
+  "_id": 15,
+  "startTimestamp": {
+    "$numberLong": "1733304932152"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733305686052"
+  },
+  "objectCount": {
+    "$numberLong": "28260"
+  }
+},
+{
+  "_id": 16,
+  "startTimestamp": {
+    "$numberLong": "1733305736991"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733305740791"
+  },
+  "objectCount": {
+    "$numberLong": "55"
+  }
+},
+{
+  "_id": 17,
+  "startTimestamp": {
+    "$numberLong": "1733305759391"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733412111791"
+  },
+  "objectCount": {
+    "$numberLong": "5058256"
+  }
+},
+{
+  "_id": 18,
+  "startTimestamp": {
+    "$numberLong": "1733412182408"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733467656386"
+  },
+  "objectCount": {
+    "$numberLong": "2658441"
+  }
+},
+{
+  "_id": 19,
+  "startTimestamp": {
+    "$numberLong": "1733468724152"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733469182813"
+  },
+  "objectCount": {
+    "$numberLong": "22038"
+  }
+},
+{
+  "_id": 20,
+  "startTimestamp": {
+    "$numberLong": "1733469191409"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733469191710"
+  },
+  "objectCount": {
+    "$numberLong": "6"
+  }
+},
+{
+  "_id": 21,
+  "startTimestamp": {
+    "$numberLong": "1733469199697"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470245410"
+  },
+  "objectCount": {
+    "$numberLong": "50317"
+  }
+},
+{
+  "_id": 22,
+  "startTimestamp": {
+    "$numberLong": "1733470260648"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470291147"
+  },
+  "objectCount": {
+    "$numberLong": "2209"
+  }
+},
+{
+  "_id": 23,
+  "startTimestamp": {
+    "$numberLong": "1733470303799"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470391242"
+  },
+  "objectCount": {
+    "$numberLong": "2683"
+  }
+},
+{
+  "_id": 24,
+  "startTimestamp": {
+    "$numberLong": "1733470407097"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470407299"
+  },
+  "objectCount": {
+    "$numberLong": "4"
+  }
+},
+{
+  "_id": 25,
+  "startTimestamp": {
+    "$numberLong": "1733470420268"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470421469"
+  },
+  "objectCount": {
+    "$numberLong": "17"
+  }
+},
+{
+  "_id": 26,
+  "startTimestamp": {
+    "$numberLong": "1733470473429"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733470564229"
+  },
+  "objectCount": {
+    "$numberLong": "3780"
+  }
+},
+{
+  "_id": 27,
+  "startTimestamp": {
+    "$numberLong": "1733470576325"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471030926"
+  },
+  "objectCount": {
+    "$numberLong": "20178"
+  }
+},
+{
+  "_id": 28,
+  "startTimestamp": {
+    "$numberLong": "1733471043452"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471624152"
+  },
+  "objectCount": {
+    "$numberLong": "27394"
+  }
+},
+{
+  "_id": 29,
+  "startTimestamp": {
+    "$numberLong": "1733471633583"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471641670"
+  },
+  "objectCount": {
+    "$numberLong": "24"
+  }
+},
+{
+  "_id": 30,
+  "startTimestamp": {
+    "$numberLong": "1733471658768"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471660266"
+  },
+  "objectCount": {
+    "$numberLong": "26"
+  }
+},
+{
+  "_id": 31,
+  "startTimestamp": {
+    "$numberLong": "1733471669707"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471696553"
+  },
+  "objectCount": {
+    "$numberLong": "571"
+  }
+},
+{
+  "_id": 32,
+  "startTimestamp": {
+    "$numberLong": "1733471706299"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733471718140"
+  },
+  "objectCount": {
+    "$numberLong": "393"
+  }
+},
+{
+  "_id": 33,
+  "startTimestamp": {
+    "$numberLong": "1733471730590"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733473864891"
+  },
+  "objectCount": {
+    "$numberLong": "97179"
+  }
+},
+{
+  "_id": 34,
+  "startTimestamp": {
+    "$numberLong": "1733473870915"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733473874516"
+  },
+  "objectCount": {
+    "$numberLong": "86"
+  }
+},
+{
+  "_id": 35,
+  "startTimestamp": {
+    "$numberLong": "1733473881512"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733473966049"
+  },
+  "objectCount": {
+    "$numberLong": "4560"
+  }
+},
+{
+  "_id": 36,
+  "startTimestamp": {
+    "$numberLong": "1733473973074"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733473977092"
+  },
+  "objectCount": {
+    "$numberLong": "20"
+  }
+},
+{
+  "_id": 37,
+  "startTimestamp": {
+    "$numberLong": "1733474000134"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733474042935"
+  },
+  "objectCount": {
+    "$numberLong": "1980"
+  }
+},
+{
+  "_id": 38,
+  "startTimestamp": {
+    "$numberLong": "1733474543499"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733480239300"
+  },
+  "objectCount": {
+    "$numberLong": "266055"
+  }
+},
+{
+  "_id": 39,
+  "startTimestamp": {
+    "$numberLong": "1733483377281"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733483381281"
+  },
+  "objectCount": {
+    "$numberLong": "131"
+  }
+},
+{
+  "_id": 40,
+  "startTimestamp": {
+    "$numberLong": "1733483398381"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733762373282"
+  },
+  "objectCount": {
+    "$numberLong": "13040487"
+  }
+},
+{
+  "_id": 41,
+  "startTimestamp": {
+    "$numberLong": "1733762415784"
+  },
+  "endTimestamp": {
+    "$numberLong": "1733762419384"
+  },
+  "objectCount": {
+    "$numberLong": "83"
+  }
+},
+{
+  "_id": 42,
+  "startTimestamp": {
+    "$numberLong": "1733762436084"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734086057045"
+  },
+  "objectCount": {
+    "$numberLong": "12617727"
+  }
+},
+{
+  "_id": 43,
+  "startTimestamp": {
+    "$numberLong": "1734087009147"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734087013047"
+  },
+  "objectCount": {
+    "$numberLong": "87"
+  }
+},
+{
+  "_id": 44,
+  "startTimestamp": {
+    "$numberLong": "1734087030347"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734436710547"
+  },
+  "objectCount": {
+    "$numberLong": "16668744"
+  }
+},
+{
+  "_id": 45,
+  "startTimestamp": {
+    "$numberLong": "1734436807361"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734436809560"
+  },
+  "objectCount": {
+    "$numberLong": "75"
+  }
+},
+{
+  "_id": 46,
+  "startTimestamp": {
+    "$numberLong": "1734436828560"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734506818160"
+  },
+  "objectCount": {
+    "$numberLong": "3337619"
+  }
+},
+{
+  "_id": 47,
+  "startTimestamp": {
+    "$numberLong": "1734508165306"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734508169305"
+  },
+  "objectCount": {
+    "$numberLong": "141"
+  }
+},
+{
+  "_id": 48,
+  "startTimestamp": {
+    "$numberLong": "1734508186404"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734520253505"
+  },
+  "objectCount": {
+    "$numberLong": "580913"
+  }
+},
+{
+  "_id": 49,
+  "startTimestamp": {
+    "$numberLong": "1734520586837"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734520587837"
+  },
+  "objectCount": {
+    "$numberLong": "55"
+  }
+},
+{
+  "_id": 50,
+  "startTimestamp": {
+    "$numberLong": "1734520606837"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734529745537"
+  },
+  "objectCount": {
+    "$numberLong": "538467"
+  }
+},
+{
+  "_id": 51,
+  "startTimestamp": {
+    "$numberLong": "1734529750937"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734530968737"
+  },
+  "objectCount": {
+    "$numberLong": "107172"
+  }
+},
+{
+  "_id": 52,
+  "startTimestamp": {
+    "$numberLong": "1734530973738"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734531098036"
+  },
+  "objectCount": {
+    "$numberLong": "7493"
+  }
+},
+{
+  "_id": 53,
+  "startTimestamp": {
+    "$numberLong": "1734532098375"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734532099375"
+  },
+  "objectCount": {
+    "$numberLong": "80"
+  }
+},
+{
+  "_id": 54,
+  "startTimestamp": {
+    "$numberLong": "1734532118975"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734532430875"
+  },
+  "objectCount": {
+    "$numberLong": "35358"
+  }
+},
+{
+  "_id": 55,
+  "startTimestamp": {
+    "$numberLong": "1734532447175"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734532448175"
+  },
+  "objectCount": {
+    "$numberLong": "61"
+  }
+},
+{
+  "_id": 56,
+  "startTimestamp": {
+    "$numberLong": "1734532466376"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734533053075"
+  },
+  "objectCount": {
+    "$numberLong": "34697"
+  }
+},
+{
+  "_id": 57,
+  "startTimestamp": {
+    "$numberLong": "1734533058375"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734533665275"
+  },
+  "objectCount": {
+    "$numberLong": "36076"
+  }
+},
+{
+  "_id": 58,
+  "startTimestamp": {
+    "$numberLong": "1734533670276"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734539768175"
+  },
+  "objectCount": {
+    "$numberLong": "359667"
+  }
+},
+{
+  "_id": 59,
+  "startTimestamp": {
+    "$numberLong": "1734539773575"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734540988375"
+  },
+  "objectCount": {
+    "$numberLong": "71613"
+  }
+},
+{
+  "_id": 60,
+  "startTimestamp": {
+    "$numberLong": "1734540993376"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734542868275"
+  },
+  "objectCount": {
+    "$numberLong": "112697"
+  }
+},
+{
+  "_id": 61,
+  "startTimestamp": {
+    "$numberLong": "1734543824689"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734543825688"
+  },
+  "objectCount": {
+    "$numberLong": "77"
+  }
+},
+{
+  "_id": 62,
+  "startTimestamp": {
+    "$numberLong": "1734543844688"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734544650388"
+  },
+  "objectCount": {
+    "$numberLong": "82728"
+  }
+},
+{
+  "_id": 63,
+  "startTimestamp": {
+    "$numberLong": "1734549707652"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734549708652"
+  },
+  "objectCount": {
+    "$numberLong": "77"
+  }
+},
+{
+  "_id": 64,
+  "startTimestamp": {
+    "$numberLong": "1734549727653"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734551583752"
+  },
+  "objectCount": {
+    "$numberLong": "183377"
+  }
+},
+{
+  "_id": 65,
+  "startTimestamp": {
+    "$numberLong": "1734552359608"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734552360608"
+  },
+  "objectCount": {
+    "$numberLong": "80"
+  }
+},
+{
+  "_id": 66,
+  "startTimestamp": {
+    "$numberLong": "1734552379608"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734605852408"
+  },
+  "objectCount": {
+    "$numberLong": "3050358"
+  }
+},
+{
+  "_id": 67,
+  "startTimestamp": {
+    "$numberLong": "1734606657686"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734606658687"
+  },
+  "objectCount": {
+    "$numberLong": "72"
+  }
+},
+{
+  "_id": 68,
+  "startTimestamp": {
+    "$numberLong": "1734606677686"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734613615287"
+  },
+  "objectCount": {
+    "$numberLong": "797459"
+  }
+},
+{
+  "_id": 69,
+  "startTimestamp": {
+    "$numberLong": "1734613896379"
+  },
+  "endTimestamp": {
+    "$numberLong": "1734613897379"
+  },
+  "objectCount": {
+    "$numberLong": "80"
+  }
+},
+{
+  "_id": 70,
+  "startTimestamp": {
+    "$numberLong": "1734613915379"
+  },
+  "endTimestamp": {
+    "$numberLong": "1735263869579"
+  },
+  "objectCount": {
+    "$numberLong": "70308488"
+  }
+},
+{
+  "_id": 71,
+  "startTimestamp": {
+    "$numberLong": "1735263880580"
+  },
+  "endTimestamp": {
+    "$numberLong": "1735596782179"
+  },
+  "objectCount": {
+    "$numberLong": "36092982"
+  }
+},
+{
+  "_id": 72,
+  "startTimestamp": {
+    "$numberLong": "1735596792179"
+  },
+  "endTimestamp": {
+    "$numberLong": "1735672233781"
+  },
+  "objectCount": {
+    "$numberLong": "8217893"
+  }
+}]

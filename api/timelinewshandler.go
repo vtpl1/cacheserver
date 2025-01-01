@@ -11,20 +11,23 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/vtpl1/cacheserver/db"
+	"github.com/vtpl1/cacheserver/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 const (
-	maxTimeGapAllowedInmSecForMinute  = 60000
-	maxTimeGapAllowedInmSecForHour    = 60 * maxTimeGapAllowedInmSecForMinute
-	maxTimeGapAllowedInmSecForDay     = 24 * maxTimeGapAllowedInmSecForHour
-	maxTimeGapAllowedInmSecFor3Days   = 3 * maxTimeGapAllowedInmSecForDay
-	maxTimeGapAllowedInmSecForWeek    = 7 * maxTimeGapAllowedInmSecForDay
-	maxTimeGapAllowedInmSecForMonth   = 30 * maxTimeGapAllowedInmSecForDay
-	maxTimeGapAllowedInmSecFor3Months = 3 * maxTimeGapAllowedInmSecForMonth
-	maxTimeGapAllowedInmSecFor6Months = 3 * maxTimeGapAllowedInmSecForMonth
-	maxTimeGapAllowedInmSecForYear    = 12 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecForSecond   = 1000
+	maxTimeGapAllowedInmSecFor10Second = 10 * maxTimeGapAllowedInmSecForSecond
+	maxTimeGapAllowedInmSecForMinute   = 60 * maxTimeGapAllowedInmSecForSecond
+	maxTimeGapAllowedInmSecForHour     = 60 * maxTimeGapAllowedInmSecForMinute
+	maxTimeGapAllowedInmSecForDay      = 24 * maxTimeGapAllowedInmSecForHour
+	maxTimeGapAllowedInmSecFor3Days    = 3 * maxTimeGapAllowedInmSecForDay
+	maxTimeGapAllowedInmSecForWeek     = 7 * maxTimeGapAllowedInmSecForDay
+	maxTimeGapAllowedInmSecForMonth    = int64(30 * maxTimeGapAllowedInmSecForDay)
+	maxTimeGapAllowedInmSecFor3Months  = 3 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecFor6Months  = 3 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecForYear     = 12 * maxTimeGapAllowedInmSecForMonth
 )
 
 var (
@@ -52,7 +55,6 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 	opts := options.Aggregate().SetAllowDiskUse(true)
 
 	cursor, err := collection.Aggregate(ctx, config.filter, opts)
-
 	if err != nil {
 		writeErrorResponse(c, socketMutex, err)
 		return nil, err
@@ -107,13 +109,10 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 	var socketMutex sync.Mutex
 	var cancel context.CancelFunc
 	for {
-		var cmd Command
+		var cmd models.Command
 		if err = c.ReadJSON(&cmd); err != nil {
 			logger.Error().Err(err).Msg("Failed to read websocket command")
 			writeErrorResponse(c, &socketMutex, errInvalidCommand)
-			if cancel != nil {
-				cancel()
-			}
 			break
 		}
 		if cancel != nil {
@@ -121,458 +120,246 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 		}
 		var ctx1 context.Context
 		ctx1, cancel = context.WithCancel(ctx)
+		defer cancel()
 		go writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger)
 	}
 }
 
-func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger) {
+func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger) {
 	if cmd.DomainMax < cmd.DomainMin {
 		logger.Error().Err(errInvalidTimeRange)
 		writeErrorResponse(c, socketMutex, errInvalidTimeRange)
 		return
 	}
 
-	// filter := bson.M{"$or": []bson.M{
-	// 	{"startTimestamp": bson.M{"$gte": cmd.DomainMin, "$lte": cmd.DomainMax}},
-	// 	{"endTimestamp": bson.M{"$gte": cmd.DomainMin, "$lte": cmd.DomainMax}},
-	// 	{"$and": []bson.M{
-	// 		{"startTimestamp": bson.M{"$lte": cmd.DomainMin}},
-	// 		{"endTimestamp": bson.M{"$gte": cmd.DomainMax}},
-	// 	}},
-	// }}
-	var maxTimeGapAllowedInmSec int
-	domainMax := cmd.DomainMax
-	domainMin := cmd.DomainMin
+	var maxTimeGapAllowedInmSec int64
+	domainMax := int64(cmd.DomainMax)
+	domainMin := int64(cmd.DomainMin)
 	diff := domainMax - domainMin
 	switch {
-	case diff < maxTimeGapAllowedInmSecForMinute:
-		maxTimeGapAllowedInmSec = 100
-	case diff < maxTimeGapAllowedInmSecForHour:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
-	case diff < maxTimeGapAllowedInmSecForDay:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
-	case diff < maxTimeGapAllowedInmSecForWeek:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
+	case diff < maxTimeGapAllowedInmSecForMonth:
+		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor10Second
 	case diff < maxTimeGapAllowedInmSecFor6Months:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSec
-	case diff < maxTimeGapAllowedInmSecForYear:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor3Days
+		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
 	default:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForYear
+		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
 	}
-	logger.Info().Int("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
-	filter := bson.A{
-		bson.D{
-			{"$match",
-				bson.D{
-					{"$or",
-						bson.A{
-							bson.D{
-								{"startTimestamp",
-									bson.D{
-										{"$gte", domainMin},
-										{"$lte", domainMax},
-									},
-								},
-							},
-							bson.D{
-								{"endTimestamp",
-									bson.D{
-										{"$gte", domainMin},
-										{"$lte", domainMax},
-									},
-								},
-							},
-							bson.D{
-								{"$and",
-									bson.A{
-										bson.D{
-											{"startTimestamp", bson.D{{"$lte", domainMin}}},
-											{"endTimestamp", bson.D{{"$gte", domainMax}}},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{{"$set", bson.D{{"maxTimeGapAllowed", maxTimeGapAllowedInmSec}}}},
-		bson.D{
-			{"$setWindowFields",
-				bson.D{
-					{"partitionBy", "channelId"},
-					{"sortBy", bson.D{{"startTimestamp", 1}}},
-					{"output",
-						bson.D{
-							{"prevTimeStamp",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$startTimestamp"},
-											{"by", -1},
-										},
-									},
-								},
-							},
-							{"nextTimeStamp",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$startTimestamp"},
-											{"by", 1},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"prevTimeStampDifference",
-						bson.D{
-							{"$subtract",
-								bson.A{
-									"$startTimestamp",
-									"$prevTimeStamp",
-								},
-							},
-						},
-					},
-					{"nextTimeStampDifference",
-						bson.D{
-							{"$subtract",
-								bson.A{
-									"$nextTimeStamp",
-									"$startTimestamp",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$unset",
-				bson.A{
-					"prevTimeStamp",
-					"nextTimeStamp",
-				},
-			},
-		},
-		bson.D{{"$set", bson.D{{"state", true}}}},
-		bson.D{
-			{"$setWindowFields",
-				bson.D{
-					{"partitionBy", "channelId"},
-					{"sortBy", bson.D{{"startTimestamp", 1}}},
-					{"output",
-						bson.D{
-							{"prevState",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$state"},
-											{"by", -1},
-											{"default", false},
-										},
-									},
-								},
-							},
-							{"nextState",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$state"},
-											{"by", 1},
-											{"default", false},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"prevState",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$lt",
-											bson.A{
-												"$prevTimeStampDifference",
-												"$maxTimeGapAllowed",
-											},
-										},
-									},
-									"$prevState",
-									false,
-								},
-							},
-						},
-					},
-					{"nextState",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$lt",
-											bson.A{
-												"$nextTimeStampDifference",
-												"$maxTimeGapAllowed",
-											},
-										},
-									},
-									"$nextState",
-									false,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"startTimestampTemp",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$and",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															"$prevState",
-															false,
-														},
-													},
-												},
-												bson.D{
-													{"$eq",
-														bson.A{
-															"$state",
-															true,
-														},
-													},
-												},
-											},
-										},
-									},
-									"$startTimestamp",
-									"$$REMOVE",
-								},
-							},
-						},
-					},
-					{"endTimestampTemp",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$and",
-											bson.A{
-												bson.D{
-													{"$eq",
-														bson.A{
-															"$state",
-															true,
-														},
-													},
-												},
-												bson.D{
-													{"$eq",
-														bson.A{
-															"$nextState",
-															false,
-														},
-													},
-												},
-											},
-										},
-									},
-									"$endTimestamp",
-									"$$REMOVE",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$unset",
-				bson.A{
-					"state",
-					"nextState",
-					"prevState",
-					"prevTimeStampDifference",
-					"nextTimeStampDifference",
-				},
-			},
-		},
-		bson.D{
-			{"$match",
-				bson.D{
-					{"$or",
-						bson.A{
-							bson.D{{"startTimestampTemp", bson.D{{"$exists", true}}}},
-							bson.D{{"endTimestampTemp", bson.D{{"$exists", true}}}},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$setWindowFields",
-				bson.D{
-					{"partitionBy", "channelId"},
-					{"sortBy", bson.D{{"startTimestamp", 1}}},
-					{"output",
-						bson.D{
-							{"endTimestamp",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$endTimestampTemp"},
-											{"by", 1},
-										},
-									},
-								},
-							},
-							{"startTimestamp",
-								bson.D{
-									{"$shift",
-										bson.D{
-											{"output", "$startTimestampTemp"},
-											{"by", -1},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$match",
-				bson.D{
-					{"$or",
-						bson.A{
-							bson.D{
-								{"$and",
-									bson.A{
-										bson.D{{"startTimestampTemp", bson.D{{"$ne", bson.Null{}}}}},
-										bson.D{{"endTimestamp", bson.D{{"$ne", bson.Null{}}}}},
-									},
-								},
-							},
-							bson.D{
-								{"$and",
-									bson.A{
-										bson.D{{"startTimestampTemp", bson.D{{"$ne", bson.Null{}}}}},
-										bson.D{{"endTimestampTemp", bson.D{{"$ne", bson.Null{}}}}},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"startTimestamp",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$eq",
-											bson.A{
-												"$startTimestamp",
-												bson.Null{},
-											},
-										},
-									},
-									"$startTimestampTemp",
-									"$startTimestamp",
-								},
-							},
-						},
-					},
-					{"endTimestamp",
-						bson.D{
-							{"$cond",
-								bson.A{
-									bson.D{
-										{"$eq",
-											bson.A{
-												"$endTimestamp",
-												bson.Null{},
-											},
-										},
-									},
-									"$endTimestampTemp",
-									"$endTimestamp",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$set",
-				bson.D{
-					{"timeStampDifference",
-						bson.D{
-							{"$subtract",
-								bson.A{
-									"$endTimestamp",
-									"$startTimestamp",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		bson.D{
-			{"$unset",
-				bson.A{
-					"startTimestampTemp",
-				},
-			},
-		},
-	}
-	// filterWithSiteIDChannelID := bson.M{"siteId": siteID, "channelId": channelID}
+	logger.Info().Int64("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
 
-	// // Copy from the original map to the target map
-	// for key, value := range filter {
-	// 	filterWithSiteIDChannelID[key] = value
-	// }
+	matchSiteIDChannelIDStage := bson.D{
+		{
+			Key: "$match",
+			Value: bson.D{
+				{Key: "siteId", Value: siteID},
+				{Key: "channelId", Value: channelID},
+			},
+		},
+	}
+	matchStage := bson.D{
+		{
+			Key: "$match",
+			Value: bson.D{
+				{
+					Key: "$or",
+					Value: bson.A{
+						bson.D{
+							{
+								Key: "startTimestamp",
+								Value: bson.D{
+									{Key: "$gte", Value: domainMin},
+									{Key: "$lte", Value: domainMax},
+								},
+							},
+						},
+						bson.D{
+							{
+								Key: "endTimestamp",
+								Value: bson.D{
+									{Key: "$gte", Value: domainMin},
+									{Key: "$lte", Value: domainMax},
+								},
+							},
+						},
+						bson.D{
+							{
+								Key: "$and",
+								Value: bson.A{
+									bson.D{{Key: "startTimestamp", Value: bson.D{{Key: "$lte", Value: domainMin}}}},
+									bson.D{{Key: "endTimestamp", Value: bson.D{{Key: "$gte", Value: domainMax}}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	sortStage := bson.D{{Key: "$sort", Value: bson.D{{Key: "startTimestamp", Value: 1}}}}
+	effectiveEndTimestampAddFieldsStage := bson.D{
+		{
+			Key: "$addFields",
+			Value: bson.D{
+				{
+					Key: "effectiveEndTimestamp",
+					Value: bson.D{
+						{
+							Key: "$add",
+							Value: bson.A{
+								"$endTimestamp",
+								maxTimeGapAllowedInmSec,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	prevEffectiveEndTimestampSetWindowFieldsStage := bson.D{
+		{
+			Key: "$setWindowFields",
+			Value: bson.D{
+				{Key: "sortBy", Value: bson.D{{Key: "startTimestamp", Value: 1}}},
+				{
+					Key: "output",
+					Value: bson.D{
+						{
+							Key: "prevEffectiveEndTimestamp",
+							Value: bson.D{
+								{
+									Key: "$shift",
+									Value: bson.D{
+										{Key: "output", Value: "$effectiveEndTimestamp"},
+										{Key: "by", Value: -1},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	boundarySetStage := bson.D{
+		{
+			Key: "$set",
+			Value: bson.D{
+				{
+					Key: "boundary",
+					Value: bson.D{
+						{
+							Key: "$sum",
+							Value: bson.D{
+								{
+									Key: "$cond",
+									Value: bson.A{
+										bson.D{
+											{
+												Key: "$or",
+												Value: bson.A{
+													bson.D{
+														{
+															Key: "$eq",
+															Value: bson.A{
+																"$prevEffectiveEndTimestamp",
+																bson.Null{},
+															},
+														},
+													},
+													bson.D{
+														{
+															Key: "$lt",
+															Value: bson.A{
+																"$prevEffectiveEndTimestamp",
+																"$startTimestamp",
+															},
+														},
+													},
+												},
+											},
+										},
+										1,
+										0,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	uniqueGroupIDSetWindowFieldStage := bson.D{
+		{
+			Key: "$setWindowFields",
+			Value: bson.D{
+				{Key: "sortBy", Value: bson.D{{Key: "startTimestamp", Value: 1}}},
+				{
+					Key: "output",
+					Value: bson.D{
+						{
+							Key: "groupId",
+							Value: bson.D{
+								{Key: "$sum", Value: "$boundary"},
+								{
+									Key: "window",
+									Value: bson.D{
+										{
+											Key: "documents",
+											Value: bson.A{
+												"unbounded",
+												"current",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	recalculateGroupstage := bson.D{
+		{
+			Key: "$group",
+			Value: bson.D{
+				{Key: "_id", Value: "$groupId"},
+				{Key: "startTimestamp", Value: bson.D{{Key: "$first", Value: "$startTimestamp"}}},
+				{Key: "endTimestamp", Value: bson.D{{Key: "$last", Value: "$endTimestamp"}}},
+				{Key: "objectCount", Value: bson.D{{Key: "$sum", Value: "$objectCount"}}},
+			},
+		},
+	}
+	finalSortStage := bson.D{{Key: "$sort", Value: bson.D{{Key: "startTimestamp", Value: 1}}}}
+	filter := bson.A{
+		matchStage,
+		sortStage,
+		effectiveEndTimestampAddFieldsStage,
+		prevEffectiveEndTimestampSetWindowFieldsStage,
+		boundarySetStage,
+		uniqueGroupIDSetWindowFieldStage,
+		recalculateGroupstage,
+		finalSortStage,
+	}
+	filterWithSiteIDChannelID := bson.A{matchSiteIDChannelIDStage}
+	filterWithSiteIDChannelID = append(filterWithSiteIDChannelID, filter...)
 
 	collectionConfigs := []collectionConfig{
-		{"recordings", "ivms_30", fmt.Sprintf("vVideoClips_%d_%d", siteID, channelID), &Recording{}, filter},
-		{"humans", "pvaDB", fmt.Sprintf("pva_HUMAN_%d_%d", siteID, channelID), &Human{}, filter},
-		{"vehicles", "pvaDB", fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), &Vehicle{}, filter},
-		// {"events", "dasDB", "dasEvents", &Event{}, filterWithSiteIDChannelID},
+		{"recordings", "ivms_30", fmt.Sprintf("vVideoClips_%d_%d", siteID, channelID), &models.Recording{}, filter},
+		{"humans", "pvaDB", fmt.Sprintf("pva_HUMAN_%d_%d", siteID, channelID), &models.Human{}, filter},
+		{"vehicles", "pvaDB", fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), &models.Vehicle{}, filter},
+		{"events", "dasDB", "dasEvents", &models.Event{}, filterWithSiteIDChannelID},
 	}
-
+	socketMutex.Lock()
+	if err := c.WriteJSON(fiber.Map{"status": fiber.Map{
+		"status":    "start",
+		"command":   cmd,
+		"siteId":    siteID,
+		"channelId": channelID,
+	}}); err != nil {
+		logger.Error().Err(err).Msg("WriteJSON error")
+	}
+	socketMutex.Unlock()
 	var wg sync.WaitGroup
 	counts := make(map[string]int, len(collectionConfigs))
 	for _, config := range collectionConfigs {
@@ -582,11 +369,11 @@ func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMut
 			defer wg.Done()
 			results, err1 := fetchFromCollection(ctx, c, socketMutex, config)
 			if err1 != nil {
-				logger.Error().Err(err1).Msg("Failed to fetch data from collection")
+				logger.Error().Str("fetching", config.name).Err(err1).Send()
 				return
 			}
 			counts[config.name] = len(results)
-			logger.Info().Msgf("Fetched %d %s", len(results), config.name)
+			logger.Info().Str("fetching", config.name).Int("count", len(results)).Send()
 		}(config)
 	}
 	wg.Wait()
@@ -599,7 +386,7 @@ func writeResults(ctx context.Context, cmd Command, c *websocket.Conn, socketMut
 		"channelId": channelID,
 		"counts":    counts,
 	}}); err != nil {
-		logger.Error().Err(err).Msg("Recording WriteJSON error")
+		logger.Error().Err(err).Msg("WriteJSON error")
 	}
 	socketMutex.Unlock()
 	logger.Info().Msg("Timeline data sent")

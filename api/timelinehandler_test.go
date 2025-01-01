@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vtpl1/cacheserver/api"
 	"github.com/vtpl1/cacheserver/db"
+	"github.com/vtpl1/cacheserver/models"
 )
 
 func TestTimeLineHandler(t *testing.T) {
@@ -43,19 +44,19 @@ func TestTimeLineHandler(t *testing.T) {
 	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 
 	decoder := json.NewDecoder(resp.Body)
-	var timeLineResponse2 api.TimeLineResponse
+	var timeLineResponse2 models.TimeLineResponse
 	if err := decoder.Decode(&timeLineResponse2); err != nil {
 		t.Fatalf("Error decoding JSON response: %v", err)
 	}
-	timeLineResponse1 := api.TimeLineResponse{
+	timeLineResponse1 := models.TimeLineResponse{
 		ReturnValue: "SUCCESS",
 		Code:        0,
 		Status:      200,
 		Description: "OK",
 		Message:     "Successfully Retrieved!",
-		Results: []api.Result{
+		Results: []models.Result{
 			{
-				Recordings: []api.Recording{
+				Recordings: []models.Recording{
 					{
 						SiteID:       5,
 						ChannelID:    5,
@@ -75,9 +76,9 @@ func TestTimeLineHandler(t *testing.T) {
 						TimeStampEnd: 1733932980391,
 					},
 				},
-				Events:   []api.Event{},
-				Humans:   []api.Human{},
-				Vehicles: []api.Vehicle{},
+				Events:   []models.Event{},
+				Humans:   []models.Human{},
+				Vehicles: []models.Vehicle{},
 			},
 		},
 	}

@@ -3,7 +3,6 @@ package api_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"testing"
@@ -16,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vtpl1/cacheserver/api"
 	"github.com/vtpl1/cacheserver/db"
+	"github.com/vtpl1/cacheserver/models"
 )
 
 func setupTimeLineWSHandlerApp() *fiber.App {
@@ -114,21 +114,28 @@ func TestTimeLineWSHandler_Success(t *testing.T) {
 
 	assert.Equal(t, 101, resp.StatusCode)
 	assert.Equal(t, "websocket", resp.Header.Get("Upgrade"))
-	err = conn.WriteJSON(api.Command{
+	err = conn.WriteJSON(models.Command{
 		CommandID:  "222",
 		PivotPoint: 0,
 		DisplayMin: 0,
 		DomainMin:  1732271925859,
-		DomainMax:  1735648104000,
+		DomainMax:  1735717489000,
+	})
+	assert.NoError(t, err)
+	time.Sleep(1 * time.Second)
+	err = conn.WriteJSON(models.Command{
+		CommandID:  "333",
+		PivotPoint: 0,
+		DisplayMin: 0,
+		DomainMin:  1732271925859,
+		DomainMax:  1735717489000,
 	})
 	assert.NoError(t, err)
 	var v interface{}
 
 	err = conn.ReadJSON(v)
 	assert.NoError(t, err)
-	fmt.Printf("here %v", v)
-	time.Sleep(5 * time.Second)
-
+	time.Sleep(10 * time.Second)
 }
 
 func TestTimeLineWSHandler_InvalidParams(t *testing.T) {

@@ -1,3 +1,4 @@
+// Package api contains the data models for the API
 package api
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"github.com/vtpl1/cacheserver/db"
+	"github.com/vtpl1/cacheserver/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -38,15 +40,15 @@ func TimeLineHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error connecting to MongoDB")
 	}
 
-	timeline := NewTimeLineResponse()
+	timeline := models.NewTimeLineResponse()
 	ctx, cancel := context.WithTimeout(c.Context(), 5*time.Second)
 	defer cancel()
 
 	var wg sync.WaitGroup
-	var recordings []Recording
-	var humans []Human
-	var vehicles []Vehicle
-	var events []Event
+	var recordings []models.Recording
+	var humans []models.Human
+	var vehicles []models.Vehicle
+	var events []models.Event
 	var recordingsQueryErr error
 	var humansQueryErr error
 	var vehiclesQueryErr error

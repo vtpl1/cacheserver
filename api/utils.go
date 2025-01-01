@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/vtpl1/cacheserver/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -67,7 +68,7 @@ func parseParams(c *fiber.Ctx) (int, int, uint64, uint64, error) {
 	return siteID, channelID, timeStamp, timeStampEnd, nil
 }
 
-func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Recording, error) {
+func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]models.Recording, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -75,7 +76,7 @@ func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName str
 	}
 	defer cursor.Close(ctx) //nolint:errcheck
 
-	var results []Recording
+	var results []models.Recording
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func fetchRecordings(ctx context.Context, db *mongo.Database, collectionName str
 	return results, nil
 }
 
-func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Human, error) {
+func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]models.Human, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -96,7 +97,7 @@ func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string,
 	}
 	defer cursor.Close(ctx) //nolint:errcheck
 
-	var results []Human
+	var results []models.Human
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
@@ -109,7 +110,7 @@ func fetchHumans(ctx context.Context, db *mongo.Database, collectionName string,
 	return results, nil
 }
 
-func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Vehicle, error) {
+func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]models.Vehicle, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -117,7 +118,7 @@ func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName strin
 	}
 	defer cursor.Close(ctx) //nolint:errcheck
 
-	var results []Vehicle
+	var results []models.Vehicle
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func fetchVehicles(ctx context.Context, db *mongo.Database, collectionName strin
 	return results, nil
 }
 
-func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]Event, error) {
+func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string, filter bson.M, siteID, channelID int) ([]models.Event, error) {
 	collection := db.Collection(collectionName)
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -138,7 +139,7 @@ func fetchEvents(ctx context.Context, db *mongo.Database, collectionName string,
 	}
 	defer cursor.Close(ctx) //nolint:errcheck
 
-	var results []Event
+	var results []models.Event
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}

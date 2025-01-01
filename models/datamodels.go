@@ -1,5 +1,5 @@
-// Package api contains the data models for the API
-package api
+// Package models contains all the data models
+package models
 
 // Recording represents a recording
 type Recording struct {

@@ -1,4 +1,4 @@
-package api_test
+package models_test
 
 import (
 	"encoding/json"
@@ -8,19 +8,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vtpl1/cacheserver/api"
+	"github.com/vtpl1/cacheserver/models"
 )
 
 func TestTimeLineResponseAppend(t *testing.T) {
-	timeLineResponse1 := api.TimeLineResponse{
+	timeLineResponse1 := models.TimeLineResponse{
 		ReturnValue: "SUCCESS",
 		Code:        0,
 		Status:      200,
 		Description: "OK",
 		Message:     "Successfully Retrieved!",
-		Results: []api.Result{
+		Results: []models.Result{
 			{
-				Recordings: []api.Recording{
+				Recordings: []models.Recording{
 					{
 						SiteID:       5,
 						ChannelID:    5,
@@ -28,15 +28,15 @@ func TestTimeLineResponseAppend(t *testing.T) {
 						TimeStampEnd: 1735051309524,
 					},
 				},
-				Events:   []api.Event{},
-				Humans:   []api.Human{},
-				Vehicles: []api.Vehicle{},
+				Events:   []models.Event{},
+				Humans:   []models.Human{},
+				Vehicles: []models.Vehicle{},
 			},
 		},
 	}
-	timeLineResponse2 := api.NewTimeLineResponse()
+	timeLineResponse2 := models.NewTimeLineResponse()
 
-	recordings := []api.Recording{
+	recordings := []models.Recording{
 		{
 			SiteID:       5,
 			ChannelID:    5,
@@ -70,7 +70,7 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 	}
 
 	// Unmarshal the JSON data into the struct
-	var timeLineResponse api.TimeLineResponse
+	var timeLineResponse models.TimeLineResponse
 	if err = json.Unmarshal(byteValue, &timeLineResponse); err != nil {
 		t.Fatalf("Failed to unmarshal JSON data: %s", err)
 	}
@@ -80,15 +80,15 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON data: %s", err)
 	}
-	timeLineResponse1 := api.TimeLineResponse{
+	timeLineResponse1 := models.TimeLineResponse{
 		ReturnValue: "SUCCESS",
 		Code:        0,
 		Status:      200,
 		Description: "OK",
 		Message:     "Successfully Retrieved!",
-		Results: []api.Result{
+		Results: []models.Result{
 			{
-				Recordings: []api.Recording{
+				Recordings: []models.Recording{
 					{
 						SiteID:       5,
 						ChannelID:    5,
@@ -96,9 +96,9 @@ func TestTimeLineResponseDeserialize(t *testing.T) {
 						TimeStampEnd: 1735051309524,
 					},
 				},
-				Events:   []api.Event{},
-				Humans:   []api.Human{},
-				Vehicles: []api.Vehicle{},
+				Events:   []models.Event{},
+				Humans:   []models.Human{},
+				Vehicles: []models.Vehicle{},
 			},
 		},
 	}
