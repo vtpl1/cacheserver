@@ -17,17 +17,21 @@ import (
 )
 
 const (
-	maxTimeGapAllowedInmSecForSecond   = 1000
-	maxTimeGapAllowedInmSecFor10Second = 10 * maxTimeGapAllowedInmSecForSecond
-	maxTimeGapAllowedInmSecForMinute   = 60 * maxTimeGapAllowedInmSecForSecond
-	maxTimeGapAllowedInmSecForHour     = 60 * maxTimeGapAllowedInmSecForMinute
-	maxTimeGapAllowedInmSecForDay      = 24 * maxTimeGapAllowedInmSecForHour
-	maxTimeGapAllowedInmSecFor3Days    = 3 * maxTimeGapAllowedInmSecForDay
-	maxTimeGapAllowedInmSecForWeek     = 7 * maxTimeGapAllowedInmSecForDay
-	maxTimeGapAllowedInmSecForMonth    = int64(30 * maxTimeGapAllowedInmSecForDay)
-	maxTimeGapAllowedInmSecFor3Months  = 3 * maxTimeGapAllowedInmSecForMonth
-	maxTimeGapAllowedInmSecFor6Months  = 3 * maxTimeGapAllowedInmSecForMonth
-	maxTimeGapAllowedInmSecForYear     = 12 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecForSecond    = 1000
+	maxTimeGapAllowedInmSecFor10Second  = 10 * maxTimeGapAllowedInmSecForSecond
+	maxTimeGapAllowedInmSecForMinute    = 60 * maxTimeGapAllowedInmSecForSecond
+	maxTimeGapAllowedInmSecFor10Minutes = 10 * maxTimeGapAllowedInmSecForMinute
+	maxTimeGapAllowedInmSecFor12Minutes = 12 * maxTimeGapAllowedInmSecForMinute
+	maxTimeGapAllowedInmSecFor24Minutes = 24 * maxTimeGapAllowedInmSecForMinute
+	maxTimeGapAllowedInmSecForHour      = 60 * maxTimeGapAllowedInmSecForMinute
+	maxTimeGapAllowedInmSecForDay       = 24 * maxTimeGapAllowedInmSecForHour
+	maxTimeGapAllowedInmSecFor3Days     = 3 * maxTimeGapAllowedInmSecForDay
+	maxTimeGapAllowedInmSecForWeek      = 7 * maxTimeGapAllowedInmSecForDay
+	maxTimeGapAllowedInmSecFor15Day     = 15 * maxTimeGapAllowedInmSecForDay
+	maxTimeGapAllowedInmSecForMonth     = int64(30 * maxTimeGapAllowedInmSecForDay)
+	maxTimeGapAllowedInmSecFor3Months   = 3 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecFor6Months   = 3 * maxTimeGapAllowedInmSecForMonth
+	maxTimeGapAllowedInmSecForYear      = 12 * maxTimeGapAllowedInmSecForMonth
 )
 
 var (
@@ -72,27 +76,18 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 			_ = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "error"})
 			return results, err
 		}
-		switch result.(type) {
+		switch v := result.(type) {
 		case *models.Recording:
-			rec := result.(*models.Recording)
-			rec.CommandID = config.commandID
-			result = rec
-			break
+			v.CommandID = config.commandID
 		case *models.Human:
-			human := result.(*models.Human)
-			human.CommandID = config.commandID
-			result = human
-			break
+			v.CommandID = config.commandID
+			result = v
 		case *models.Vehicle:
-			vehicle := result.(*models.Vehicle)
-			vehicle.CommandID = config.commandID
-			result = vehicle
-			break
+			v.CommandID = config.commandID
+			result = v
 		case *models.Event:
-			event := result.(*models.Event)
-			event.CommandID = config.commandID
-			result = event
-			break
+			v.CommandID = config.commandID
+			result = v
 		}
 		results = append(results, result)
 		if err = writeResponse(c, socketMutex, config.name, result); err != nil {
@@ -139,7 +134,7 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 			break
 		}
 		if cancel != nil {
-			logger.Info().Msg("Cancelling previous command")
+			logger.Info().Msg("Canceling previous command")
 			cancel()
 		}
 		var ctx1 context.Context
@@ -164,10 +159,16 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	domainMin := int64(cmd.DomainMin)
 	diff := domainMax - domainMin
 	switch {
-	case diff < maxTimeGapAllowedInmSecForMonth:
+	case diff < maxTimeGapAllowedInmSecForDay:
+		maxTimeGapAllowedInmSec = 100
+	case diff < maxTimeGapAllowedInmSecFor15Day:
 		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor10Second
-	case diff < maxTimeGapAllowedInmSecFor6Months:
+	case diff < maxTimeGapAllowedInmSecForMonth:
 		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
+	case diff < maxTimeGapAllowedInmSecFor3Months:
+		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor12Minutes
+	case diff < maxTimeGapAllowedInmSecFor6Months:
+		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor24Minutes
 	default:
 		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
 	}
