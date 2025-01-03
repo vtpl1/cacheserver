@@ -3,6 +3,7 @@ package models
 
 // Recording represents a recording
 type Recording struct {
+	CommandID    string `json:"commandId,omitempty" bson:"commandId,omitempty"`
 	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
 	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
@@ -11,6 +12,7 @@ type Recording struct {
 
 // Event represents an event
 type Event struct {
+	CommandID    string `json:"commandId,omitempty" bson:"commandId,omitempty"`
 	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
 	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
@@ -19,6 +21,7 @@ type Event struct {
 
 // Human represents a human
 type Human struct {
+	CommandID    string `json:"commandId,omitempty" bson:"commandId,omitempty"`
 	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
 	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`
@@ -28,6 +31,7 @@ type Human struct {
 
 // Vehicle represents a vehicle
 type Vehicle struct {
+	CommandID    string `json:"commandId,omitempty" bson:"commandId,omitempty"`
 	SiteID       int    `json:"siteId,omitempty" bson:"siteId,omitempty"`
 	ChannelID    int    `json:"channelId,omitempty" bson:"channelId,omitempty"`
 	TimeStamp    uint64 `json:"timeStamp" bson:"startTimestamp"`

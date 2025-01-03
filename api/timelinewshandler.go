@@ -41,6 +41,7 @@ type collectionConfig struct {
 	collName   string
 	resultType interface{}
 	filter     bson.A
+	commandID  string
 }
 
 // fetchFromCollection fetches data from a MongoDB collection and sends results to a channel
@@ -62,14 +63,36 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 	defer cursor.Close(ctx) //nolint:errcheck
 	var results []interface{}
 
-	if err = writeResponse(c, socketMutex, config.name, "start"); err != nil {
+	if err = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "start"}); err != nil {
 		return results, err
 	}
 	for cursor.Next(ctx) {
 		result := config.resultType
 		if err = cursor.Decode(result); err != nil {
-			writeErrorResponse(c, socketMutex, err)
+			_ = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "error"})
 			return results, err
+		}
+		switch result.(type) {
+		case *models.Recording:
+			rec := result.(*models.Recording)
+			rec.CommandID = config.commandID
+			result = rec
+			break
+		case *models.Human:
+			human := result.(*models.Human)
+			human.CommandID = config.commandID
+			result = human
+			break
+		case *models.Vehicle:
+			vehicle := result.(*models.Vehicle)
+			vehicle.CommandID = config.commandID
+			result = vehicle
+			break
+		case *models.Event:
+			event := result.(*models.Event)
+			event.CommandID = config.commandID
+			result = event
+			break
 		}
 		results = append(results, result)
 		if err = writeResponse(c, socketMutex, config.name, result); err != nil {
@@ -80,7 +103,7 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 		writeErrorResponse(c, socketMutex, err)
 	}
 	if err == nil {
-		_ = writeResponse(c, socketMutex, config.name, "done")
+		_ = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "done"})
 	}
 	return results, err
 }
@@ -116,12 +139,16 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 			break
 		}
 		if cancel != nil {
+			logger.Info().Msg("Cancelling previous command")
 			cancel()
 		}
 		var ctx1 context.Context
 		ctx1, cancel = context.WithCancel(ctx)
 		defer cancel()
-		go writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger)
+		go func() {
+			writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger)
+			cancel()
+		}()
 	}
 }
 
@@ -345,10 +372,10 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	filterWithSiteIDChannelID = append(filterWithSiteIDChannelID, filter...)
 
 	collectionConfigs := []collectionConfig{
-		{"recordings", "ivms_30", fmt.Sprintf("vVideoClips_%d_%d", siteID, channelID), &models.Recording{}, filter},
-		{"humans", "pvaDB", fmt.Sprintf("pva_HUMAN_%d_%d", siteID, channelID), &models.Human{}, filter},
-		{"vehicles", "pvaDB", fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), &models.Vehicle{}, filter},
-		{"events", "dasDB", "dasEvents", &models.Event{}, filterWithSiteIDChannelID},
+		{"recordings", "ivms_30", fmt.Sprintf("vVideoClips_%d_%d", siteID, channelID), &models.Recording{}, filter, cmd.CommandID},
+		{"humans", "pvaDB", fmt.Sprintf("pva_HUMAN_%d_%d", siteID, channelID), &models.Human{}, filter, cmd.CommandID},
+		{"vehicles", "pvaDB", fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), &models.Vehicle{}, filter, cmd.CommandID},
+		{"events", "dasDB", "dasEvents", &models.Event{}, filterWithSiteIDChannelID, cmd.CommandID},
 	}
 	socketMutex.Lock()
 	if err := c.WriteJSON(fiber.Map{"status": fiber.Map{
