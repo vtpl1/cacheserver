@@ -158,20 +158,24 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	domainMax := int64(cmd.DomainMax)
 	domainMin := int64(cmd.DomainMin)
 	diff := domainMax - domainMin
-	switch {
-	case diff < maxTimeGapAllowedInmSecForDay:
+	maxTimeGapAllowedInmSec = diff / 3907
+	if maxTimeGapAllowedInmSec <= 0 {
 		maxTimeGapAllowedInmSec = 100
-	case diff < maxTimeGapAllowedInmSecFor15Day:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor10Second
-	case diff < maxTimeGapAllowedInmSecForMonth:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
-	case diff < maxTimeGapAllowedInmSecFor3Months:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor12Minutes
-	case diff < maxTimeGapAllowedInmSecFor6Months:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor24Minutes
-	default:
-		maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
 	}
+	// switch {
+	// case diff < maxTimeGapAllowedInmSecForDay:
+	// 	maxTimeGapAllowedInmSec = 100
+	// case diff < maxTimeGapAllowedInmSecFor15Day:
+	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor10Second
+	// case diff < maxTimeGapAllowedInmSecForMonth:
+	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForMinute
+	// case diff < maxTimeGapAllowedInmSecFor3Months:
+	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor12Minutes
+	// case diff < maxTimeGapAllowedInmSecFor6Months:
+	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecFor24Minutes
+	// default:
+	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
+	// }
 	logger.Info().Int64("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
 
 	matchSiteIDChannelIDStage := bson.D{
