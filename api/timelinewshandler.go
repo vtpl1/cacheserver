@@ -105,14 +105,14 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 
 func writeErrorResponse(c *websocket.Conn, socketMutex *sync.Mutex, err error) {
 	socketMutex.Lock()
-	_ = c.WriteJSON(fiber.Map{"error": err.Error()})
-	socketMutex.Unlock()
+	defer socketMutex.Unlock()
+	_ = c.WriteJSON(fiber.Map{"type": "error", "error": err.Error()})
 }
 
 func writeResponse(c *websocket.Conn, socketMutex *sync.Mutex, msgKey string, msg interface{}) error {
 	socketMutex.Lock()
-	err := c.WriteJSON(fiber.Map{msgKey: msg})
-	socketMutex.Unlock()
+	defer socketMutex.Unlock()
+	err := c.WriteJSON(fiber.Map{"type": msgKey, msgKey: msg})
 	return err
 }
 
@@ -382,16 +382,16 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 		{"vehicles", "pvaDB", fmt.Sprintf("pva_VEHICLE_%d_%d", siteID, channelID), &models.Vehicle{}, filter, cmd.CommandID},
 		{"events", "dasDB", "dasEvents", &models.Event{}, filterWithSiteIDChannelID, cmd.CommandID},
 	}
-	socketMutex.Lock()
-	if err := c.WriteJSON(fiber.Map{"status": fiber.Map{
+
+	if err := writeResponse(c, socketMutex, "status", fiber.Map{
 		"status":    "start",
 		"command":   cmd,
 		"siteId":    siteID,
 		"channelId": channelID,
-	}}); err != nil {
-		logger.Error().Err(err).Msg("WriteJSON error")
+	}); err != nil {
+		logger.Error().Err(err).Msg("writeResponse error")
 	}
-	socketMutex.Unlock()
+
 	var wg sync.WaitGroup
 	counts := make(map[string]int, len(collectionConfigs))
 	for _, config := range collectionConfigs {
@@ -410,16 +410,15 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	}
 	wg.Wait()
 
-	socketMutex.Lock()
-	if err := c.WriteJSON(fiber.Map{"status": fiber.Map{
+	if err := writeResponse(c, socketMutex, "status", fiber.Map{
 		"status":    "done",
 		"command":   cmd,
 		"siteId":    siteID,
 		"channelId": channelID,
 		"counts":    counts,
-	}}); err != nil {
-		logger.Error().Err(err).Msg("WriteJSON error")
+	}); err != nil {
+		logger.Error().Err(err).Msg("writeResponse error")
 	}
-	socketMutex.Unlock()
+
 	logger.Info().Msg("Timeline data sent")
 }
