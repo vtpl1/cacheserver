@@ -110,13 +110,13 @@ func main() {
 			},
 			&cli.IntFlag{
 				Name:    "port",
-				Value:   8080,
+				Value:   8084,
 				Usage:   "The port number for the server",
 				Sources: cli.EnvVars("PORT"),
 			},
 			&cli.StringFlag{
 				Name:    "mongo-connection-string",
-				Value:   "mongodb://root:root%40central1234@45.33.125.226:27017/",
+				Value:   "mongodb://restheart:R3ste4rt%21@127.0.0.1:27017/",
 				Usage:   "The connection string for the MongoDB server",
 				Sources: cli.EnvVars("MONGO_CONNECTION_STRING"),
 			},

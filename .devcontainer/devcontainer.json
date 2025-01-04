@@ -14,20 +14,22 @@
 				"golang.Go"
 			]
 		}
+	},
+	"runArgs": [
+		"--network=host"
+	],
+	"containerEnv": {
+		"PORT": "8084",
+		"MONGO_CONNECTION_STRING": "mongodb://root:root%40central1234@45.33.125.226:27017/"
 	}
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",
-
 	// Configure tool-specific properties.
 	// "customizations": {},
-
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
 }
