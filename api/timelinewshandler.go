@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -125,7 +126,10 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 	}
 	logger := log.With().Int("siteId", siteID).Int("channelId", channelID).Logger()
 	var socketMutex sync.Mutex
+
 	var cancel context.CancelFunc
+	var ctx1 context.Context
+
 	for {
 		var cmd models.Command
 		if err = c.ReadJSON(&cmd); err != nil {
@@ -133,21 +137,32 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 			writeErrorResponse(c, &socketMutex, errInvalidCommand)
 			break
 		}
+		logger.Info().Msg("command:" + fmt.Sprint(cmd))
+
 		if cancel != nil {
-			logger.Info().Msg("Canceling previous command")
+			logger.Info().Msg("Canceling previous command:" + fmt.Sprint(cmd))
 			cancel()
+			time.Sleep(100 * time.Millisecond)
+			cancel = nil
 		}
-		var ctx1 context.Context
+
 		ctx1, cancel = context.WithCancel(ctx)
 		defer cancel()
 		go func() {
 			writeResults(ctx1, cmd, c, &socketMutex, siteID, channelID, &logger)
-			cancel()
+			if cancel != nil {
+				cancel()
+				cancel = nil
+			}
 		}()
 	}
 }
 
 func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger) {
+	logger.Info().Str("command_id", cmd.CommandID).Str("Entering", "deferred").Send()
+	defer func() {
+		logger.Info().Str("command_id", cmd.CommandID).Str("Exiting", "deferred").Send()
+	}()
 	if cmd.DomainMax < cmd.DomainMin {
 		logger.Error().Err(errInvalidTimeRange)
 		writeErrorResponse(c, socketMutex, errInvalidTimeRange)
@@ -176,7 +191,7 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	// default:
 	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
 	// }
-	logger.Info().Int64("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
+	logger.Info().Str("command_id", cmd.CommandID).Int64("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
 
 	matchSiteIDChannelIDStage := bson.D{
 		{
@@ -401,11 +416,11 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 			defer wg.Done()
 			results, err1 := fetchFromCollection(ctx, c, socketMutex, config)
 			if err1 != nil {
-				logger.Error().Str("fetching", config.name).Err(err1).Send()
+				logger.Error().Str("command_id", cmd.CommandID).Str("fetching", config.name).Err(err1).Send()
 				return
 			}
 			counts[config.name] = len(results)
-			logger.Info().Str("fetching", config.name).Int("count", len(results)).Send()
+			logger.Info().Str("command_id", cmd.CommandID).Str("fetched-sent", config.name).Int("count", len(results)).Send()
 		}(config)
 	}
 	wg.Wait()
