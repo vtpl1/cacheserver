@@ -103,7 +103,7 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 
 		}
 		resultsToSend = append(resultsToSend, copiedResult)
-		if len(resultsToSend) >= 100 {
+		if len(resultsToSend) >= 200 {
 			if !isStartStatusSent {
 				isStartStatusSent = true
 				if err = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "start"}); err != nil {
@@ -214,7 +214,7 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	domainMax := int64(cmd.DomainMax)
 	domainMin := int64(cmd.DomainMin)
 	diff := domainMax - domainMin
-	maxTimeGapAllowedInmSec = diff / 3907
+	maxTimeGapAllowedInmSec = diff / 5000
 	if maxTimeGapAllowedInmSec <= 0 {
 		maxTimeGapAllowedInmSec = 100
 	}
