@@ -51,6 +51,7 @@ type collectionConfig struct {
 
 // fetchFromCollection fetches data from a MongoDB collection and sends results to a channel
 func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sync.Mutex, config collectionConfig) ([]interface{}, error) {
+	start := time.Now()
 	client, err := db.GetDefaultMongoClient()
 	if err != nil {
 		writeErrorResponse(c, socketMutex, err)
@@ -65,6 +66,8 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 		writeErrorResponse(c, socketMutex, err)
 		return nil, err
 	}
+	log.Info().Str("command_id", config.commandID).Str("collection", config.collName).Int64("aggregation_time_in_millis", time.Since(start).Milliseconds()).Send()
+
 	defer cursor.Close(ctx) //nolint:errcheck
 	var results []interface{}
 
@@ -159,10 +162,10 @@ func TimeLineWSHandler(ctx context.Context, c *websocket.Conn) {
 }
 
 func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, socketMutex *sync.Mutex, siteID int, channelID int, logger *zerolog.Logger) {
-	logger.Info().Str("command_id", cmd.CommandID).Str("Entering", "deferred").Send()
-	defer func() {
-		logger.Info().Str("command_id", cmd.CommandID).Str("Exiting", "deferred").Send()
-	}()
+	// logger.Info().Str("command_id", cmd.CommandID).Str("Entering", "deferred").Send()
+	// defer func() {
+	// 	logger.Info().Str("command_id", cmd.CommandID).Str("Exiting", "deferred").Send()
+	// }()
 	if cmd.DomainMax < cmd.DomainMin {
 		logger.Error().Err(errInvalidTimeRange)
 		writeErrorResponse(c, socketMutex, errInvalidTimeRange)
@@ -191,7 +194,7 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 	// default:
 	// 	maxTimeGapAllowedInmSec = maxTimeGapAllowedInmSecForHour
 	// }
-	logger.Info().Str("command_id", cmd.CommandID).Int64("maxTimeGapAllowedInmSec", maxTimeGapAllowedInmSec).Send()
+	logger.Info().Str("command_id", cmd.CommandID).Int64("max_time_gap_in_ms", maxTimeGapAllowedInmSec).Send()
 
 	matchSiteIDChannelIDStage := bson.D{
 		{
@@ -414,13 +417,15 @@ func writeResults(ctx context.Context, cmd models.Command, c *websocket.Conn, so
 		go func(config collectionConfig,
 		) {
 			defer wg.Done()
+			start := time.Now()
+
 			results, err1 := fetchFromCollection(ctx, c, socketMutex, config)
 			if err1 != nil {
 				logger.Error().Str("command_id", cmd.CommandID).Str("fetching", config.name).Err(err1).Send()
 				return
 			}
 			counts[config.name] = len(results)
-			logger.Info().Str("command_id", cmd.CommandID).Str("fetched-sent", config.name).Int("count", len(results)).Send()
+			logger.Info().Str("command_id", cmd.CommandID).Str("fetched-sent", config.name).Int("count", len(results)).Int64("time_taken_in_millis", time.Since(start).Milliseconds()).Send()
 		}(config)
 	}
 	wg.Wait()
