@@ -79,20 +79,30 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 			_ = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "error"})
 			return results, err
 		}
+		// Ensure deep copy of result
+		var copiedResult interface{}
 		switch v := result.(type) {
 		case *models.Recording:
-			v.CommandID = config.commandID
+			copied := *v // Create a new copy of the struct
+			copied.CommandID = config.commandID
+			copiedResult = &copied
 		case *models.Human:
-			v.CommandID = config.commandID
-			result = v
+			copied := *v // Create a new copy of the struct
+			copied.CommandID = config.commandID
+			copiedResult = &copied
 		case *models.Vehicle:
-			v.CommandID = config.commandID
-			result = v
+			copied := *v // Create a new copy of the struct
+			copied.CommandID = config.commandID
+			copiedResult = &copied
 		case *models.Event:
-			v.CommandID = config.commandID
-			result = v
+			copied := *v // Create a new copy of the struct
+			copied.CommandID = config.commandID
+			copiedResult = &copied
+		default:
+			copiedResult = result
+
 		}
-		resultsToSend = append(resultsToSend, result)
+		resultsToSend = append(resultsToSend, copiedResult)
 		if len(resultsToSend) >= 100 {
 			if !isStartStatusSent {
 				isStartStatusSent = true
