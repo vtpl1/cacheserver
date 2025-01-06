@@ -70,10 +70,9 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 
 	defer cursor.Close(ctx) //nolint:errcheck
 	var results []interface{}
+	var resultsToSend []interface{}
 
-	if err = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "start"}); err != nil {
-		return results, err
-	}
+	isStartStatusSent := false
 	for cursor.Next(ctx) {
 		result := config.resultType
 		if err = cursor.Decode(result); err != nil {
@@ -93,11 +92,40 @@ func fetchFromCollection(ctx context.Context, c *websocket.Conn, socketMutex *sy
 			v.CommandID = config.commandID
 			result = v
 		}
-		results = append(results, result)
-		if err = writeResponse(c, socketMutex, config.name, result); err != nil {
-			return results, err
+		resultsToSend = append(resultsToSend, result)
+		if len(resultsToSend) >= 100 {
+			if !isStartStatusSent {
+				isStartStatusSent = true
+				if err = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "start"}); err != nil {
+					return results, err
+				}
+				log.Info().Str("command_id", config.commandID).Str("collection", config.collName).Str("sent", "start").Send()
+			}
+
+			if err = writeResponse(c, socketMutex, config.name, resultsToSend); err != nil {
+				return results, err
+			}
+			log.Info().Str("command_id", config.commandID).Str("collection", config.collName).Str("sent", "data").Int("count", len(resultsToSend)).Send()
+
+			results = append(results, resultsToSend...)
+			resultsToSend = nil
 		}
 	}
+	if len(resultsToSend) > 0 {
+		if !isStartStatusSent {
+			if err = writeResponse(c, socketMutex, config.name, fiber.Map{"commandId": config.commandID, "status": "start"}); err != nil {
+				return results, err
+			}
+			log.Info().Str("command_id", config.commandID).Str("collection", config.collName).Str("sent", "start").Send()
+		}
+		if err = writeResponse(c, socketMutex, config.name, resultsToSend); err != nil {
+			return results, err
+		}
+		log.Info().Str("command_id", config.commandID).Str("collection", config.collName).Str("sent_last", "data").Int("count", len(resultsToSend)).Send()
+
+		results = append(results, resultsToSend...)
+	}
+
 	if err = cursor.Err(); err != nil {
 		writeErrorResponse(c, socketMutex, err)
 	}
