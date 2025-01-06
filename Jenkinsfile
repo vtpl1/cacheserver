@@ -1,5 +1,8 @@
 pipeline {
     agent none
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('Jenkins_build')
+    }
     stages {
         stage('Build on Linux with Docker') {
             agent {
