@@ -20,21 +20,21 @@ pipeline {
             }
         }
 
-        stage('Build on Windows') {
-            agent {
-                label 'windows'
-            }
-            steps {
-                script {
-                    bat '''
-                    echo "Building Go project on Windows"
-                    go version                    
-                    '''
-                }
-                powershell '.\\build.ps1'
-                archiveArtifacts artifacts: 'binwin\\*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
-            }            
-        }
+        // stage('Build on Windows') {
+        //     agent {
+        //         label 'windows'
+        //     }
+        //     steps {
+        //         script {
+        //             bat '''
+        //             echo "Building Go project on Windows"
+        //             go version                    
+        //             '''
+        //         }
+        //         powershell '.\\build.ps1'
+        //         archiveArtifacts artifacts: 'binwin\\*', fingerprint: true, followSymlinks: true, onlyIfSuccessful: true
+        //     }            
+        // }
 
         stage('Create go docker image') {
             agent {
@@ -45,7 +45,7 @@ pipeline {
             steps {
                 sh 'rm -rf bin || true'
                 dir('bin') {
-                    copyArtifacts projectName: "${JOB_NAME}", filter: "cacheserver_linux_amd64", fingerprintArtifacts: true, flatten: false, selector: specific("${BUILD_NUMBER}");
+                    copyArtifacts projectName: "${JOB_NAME}", filter: "bin/cacheserver_linux_amd64", fingerprintArtifacts: true, flatten: false, selector: specific("${BUILD_NUMBER}");
                 }
                 script {
                     sh 'rm -f temp.Dockerfile || true'
