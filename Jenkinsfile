@@ -47,9 +47,7 @@ pipeline {
             }
             steps {
                 sh 'rm -rf bin || true'
-                dir('bin') {
-                    copyArtifacts projectName: "${JOB_NAME}", filter: "bin/cacheserver_linux_amd64", fingerprintArtifacts: true, flatten: false, selector: specific("${BUILD_NUMBER}");
-                }
+                copyArtifacts projectName: "${JOB_NAME}", filter: "bin/cacheserver_linux_amd64", fingerprintArtifacts: true, flatten: false, selector: specific("${BUILD_NUMBER}");
                 script {
                     sh 'rm -f temp.Dockerfile || true'
                     writeFile(file: 'temp.Dockerfile', text: readFile(file: 'prod.Dockerfile'))
