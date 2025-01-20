@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -67,7 +66,10 @@ func httpGetBody(url string) func() (resultValue, error) {
 }
 
 func httpGetBody1(url string) (resultValue, error) {
-	fmt.Printf("Calling %s\n", url)
+	// fmt.Printf("Calling %s\n", url)
+	if url == "https://www.wikipedia.org" {
+		panic("Panic for " + url)
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -97,12 +99,13 @@ func TestConcurrent(t *testing.T) {
 			start := time.Now()
 			value, err := cache.Get(url)
 			if err != nil {
-				t.Error(err)
+				t.Logf("%-25s %-15s error: %v\n", url, time.Since(start), err)
+			} else {
+				t.Logf("%-25s %-15s %d bytes\n", url, time.Since(start), len(value))
 			}
-			fmt.Printf("%-25s %-15s %d bytes\n", url, time.Since(start), len(value))
 			n.Done()
 		}(url)
 	}
 	n.Wait()
-	fmt.Printf("%-15s\n", time.Since(startAll))
+	t.Logf("%-15s\n", time.Since(startAll))
 }

@@ -1,6 +1,8 @@
 package cache
 
-import "fmt"
+import (
+	"errors"
+)
 
 type Cache struct {
 	requests chan request
@@ -46,19 +48,25 @@ func (c *Cache) server(f Func) {
 		e, ok := cache[req.key]
 		if !ok {
 			e = &entry{ready: make(chan struct{})}
-			fmt.Printf("Adding to list %s\n", req.key)
+			// fmt.Printf("Adding to list %s\n", req.key)
 			cache[req.key] = e
 			go e.call(f, req.key)
+
 		} else {
-			fmt.Printf("In the list %s\n", req.key)
+			// fmt.Printf("In the list %s\n", req.key)
 		}
 		go e.deliver(req.response)
 	}
 }
 
 func (e *entry) call(f Func, key string) {
+	defer close(e.ready)
+	defer func(e *entry) {
+		if r := recover(); r != nil {
+			e.res.err = errors.New("Recovered in f")
+		}
+	}(e)
 	e.res.value, e.res.err = f(key)
-	close(e.ready)
 }
 
 func (e *entry) deliver(response chan<- result) {
